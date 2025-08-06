@@ -8,9 +8,10 @@ import { ArrowLeft, Clock, Save } from 'lucide-react';
 interface TimeEntryProps {
   onSubmit: () => void;
   onBack: () => void;
+  selectedDate: Date;
 }
 
-export const TimeEntry = ({ onSubmit, onBack }: TimeEntryProps) => {
+export const TimeEntry = ({ onSubmit, onBack, selectedDate }: TimeEntryProps) => {
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
 
@@ -48,7 +49,11 @@ export const TimeEntry = ({ onSubmit, onBack }: TimeEntryProps) => {
             Enter Your Hours
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Please enter the actual times you worked today
+            Please enter the actual times you worked on {selectedDate.toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
           </CardDescription>
         </CardHeader>
         
