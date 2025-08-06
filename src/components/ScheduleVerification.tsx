@@ -150,23 +150,35 @@ export const ScheduleVerification = () => {
         
         <CardContent className="space-y-6">
           <div className="bg-muted/50 rounded-lg p-4 space-y-4">
-            <h3 className="font-semibold text-foreground mb-3">Crew Scheduled Hours</h3>
-            <div className="space-y-3">
-              {crewMembers.map((member) => (
-                <div key={member.id} className="bg-background/50 rounded-md p-3 space-y-2">
-                  <h4 className="font-medium text-foreground text-sm">{member.name}</h4>
-                  <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Start:</span>
-                      <span className="font-medium text-foreground">{member.scheduledStart}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">End:</span>
-                      <span className="font-medium text-foreground">{member.scheduledEnd}</span>
-                    </div>
-                  </div>
+            <h3 className="font-semibold text-foreground mb-3">Scheduled Hours</h3>
+            <div className="bg-background/50 rounded-md p-3 space-y-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Start Time:</span>
+                  <span className="font-medium text-foreground">{crewMembers[0].scheduledStart}</span>
                 </div>
-              ))}
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">End Time:</span>
+                  <span className="font-medium text-foreground">{crewMembers[0].scheduledEnd}</span>
+                </div>
+              </div>
+              <div className="border-t border-border pt-2 mt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Total Hours:</span>
+                  <span className="font-semibold text-foreground">8 hours</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-medium text-foreground mb-2">Crew Members</h4>
+              <div className="grid grid-cols-2 gap-2">
+                {crewMembers.map((member) => (
+                  <div key={member.id} className="bg-background/50 rounded-md px-3 py-2">
+                    <span className="text-foreground text-sm">{member.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
