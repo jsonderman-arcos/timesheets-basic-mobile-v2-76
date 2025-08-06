@@ -13,14 +13,14 @@ export const ScheduleVerification = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  // Mock crew data
+  // Mock crew data - all with same schedule
   const crewMembers = [
     { id: '1', name: 'You', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
     { id: '2', name: 'Alex Johnson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '3', name: 'Sarah Davis', scheduledStart: '8:30 AM', scheduledEnd: '4:30 PM' },
-    { id: '4', name: 'Mike Rodriguez', scheduledStart: '10:00 AM', scheduledEnd: '6:00 PM' },
+    { id: '3', name: 'Sarah Davis', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '4', name: 'Mike Rodriguez', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
     { id: '5', name: 'Emma Wilson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '6', name: 'David Brown', scheduledStart: '8:00 AM', scheduledEnd: '4:00 PM' },
+    { id: '6', name: 'David Brown', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
   ];
   
   const formatDate = (date: Date) => {
