@@ -5,24 +5,55 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Clock, Save } from 'lucide-react';
 
+interface CrewMember {
+  id: string;
+  name: string;
+  scheduledStart: string;
+  scheduledEnd: string;
+}
+
 interface TimeEntryProps {
   onSubmit: () => void;
   onBack: () => void;
   selectedDate: Date;
+  crewMembers: CrewMember[];
 }
 
-export const TimeEntry = ({ onSubmit, onBack, selectedDate }: TimeEntryProps) => {
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
+export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeEntryProps) => {
+  const [timeEntries, setTimeEntries] = useState(() => 
+    crewMembers.reduce((acc, member) => {
+      // Convert scheduled times to 24-hour format for input
+      const convertTo24Hour = (time12h: string) => {
+        const [time, modifier] = time12h.split(' ');
+        let [hours, minutes] = time.split(':');
+        if (hours === '12') {
+          hours = '00';
+        }
+        if (modifier === 'PM') {
+          hours = (parseInt(hours, 10) + 12).toString();
+        }
+        return `${hours.toString().padStart(2, '0')}:${minutes}`;
+      };
+      
+      acc[member.id] = {
+        startTime: convertTo24Hour(member.scheduledStart),
+        endTime: convertTo24Hour(member.scheduledEnd),
+      };
+      return acc;
+    }, {} as Record<string, { startTime: string; endTime: string }>)
+  );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (startTime && endTime) {
-      onSubmit();
-    }
+  const updateTimeEntry = (memberId: string, field: 'startTime' | 'endTime', value: string) => {
+    setTimeEntries(prev => ({
+      ...prev,
+      [memberId]: {
+        ...prev[memberId],
+        [field]: value,
+      }
+    }));
   };
 
-  const calculateHours = () => {
+  const calculateHours = (startTime: string, endTime: string) => {
     if (!startTime || !endTime) return '';
     
     const start = new Date(`2024-01-01 ${startTime}`);
@@ -36,7 +67,22 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate }: TimeEntryProps) =>
     return `${hours.toFixed(1)} hours`;
   };
 
-  const isValid = startTime && endTime && calculateHours();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const allValid = crewMembers.every(member => {
+      const entry = timeEntries[member.id];
+      return entry.startTime && entry.endTime && calculateHours(entry.startTime, entry.endTime);
+    });
+    
+    if (allValid) {
+      onSubmit();
+    }
+  };
+
+  const isValid = crewMembers.every(member => {
+    const entry = timeEntries[member.id];
+    return entry.startTime && entry.endTime && calculateHours(entry.startTime, entry.endTime);
+  });
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -46,10 +92,10 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate }: TimeEntryProps) =>
             <Clock className="w-8 h-8 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl font-bold text-foreground">
-            Enter Your Hours
+            Edit Crew Hours
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Please enter the actual times you worked on {selectedDate.toLocaleDateString('en-US', { 
+            Update the actual times worked on {selectedDate.toLocaleDateString('en-US', { 
               weekday: 'long', 
               month: 'long', 
               day: 'numeric' 
@@ -59,41 +105,54 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate }: TimeEntryProps) =>
         
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="start-time" className="text-foreground font-medium">
-                  Start Time
-                </Label>
-                <Input
-                  id="start-time"
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="text-lg"
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="end-time" className="text-foreground font-medium">
-                  End Time
-                </Label>
-                <Input
-                  id="end-time"
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="text-lg"
-                  required
-                />
-              </div>
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {crewMembers.map((member) => {
+                const entry = timeEntries[member.id];
+                const hours = calculateHours(entry.startTime, entry.endTime);
+                
+                return (
+                  <div key={member.id} className="bg-muted/50 rounded-lg p-4 space-y-3">
+                    <h4 className="font-semibold text-foreground">{member.name}</h4>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor={`start-${member.id}`} className="text-foreground font-medium text-sm">
+                          Start Time
+                        </Label>
+                        <Input
+                          id={`start-${member.id}`}
+                          type="time"
+                          value={entry.startTime}
+                          onChange={(e) => updateTimeEntry(member.id, 'startTime', e.target.value)}
+                          className="text-sm"
+                          required
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor={`end-${member.id}`} className="text-foreground font-medium text-sm">
+                          End Time
+                        </Label>
+                        <Input
+                          id={`end-${member.id}`}
+                          type="time"
+                          value={entry.endTime}
+                          onChange={(e) => updateTimeEntry(member.id, 'endTime', e.target.value)}
+                          className="text-sm"
+                          required
+                        />
+                      </div>
+                    </div>
 
-              {calculateHours() && (
-                <div className="bg-muted/50 rounded-lg p-3 text-center">
-                  <span className="text-muted-foreground">Total Hours: </span>
-                  <span className="font-semibold text-foreground">{calculateHours()}</span>
-                </div>
-              )}
+                    {hours && (
+                      <div className="bg-background/50 rounded-md p-2 text-center">
+                        <span className="text-muted-foreground text-sm">Total Hours: </span>
+                        <span className="font-semibold text-foreground text-sm">{hours}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             <div className="space-y-3">

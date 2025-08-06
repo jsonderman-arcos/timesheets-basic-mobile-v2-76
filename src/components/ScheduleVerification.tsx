@@ -13,9 +13,15 @@ export const ScheduleVerification = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  // Mock schedule data
-  const scheduledStart = "9:00 AM";
-  const scheduledEnd = "5:00 PM";
+  // Mock crew data
+  const crewMembers = [
+    { id: '1', name: 'You', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '2', name: 'Alex Johnson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '3', name: 'Sarah Davis', scheduledStart: '8:30 AM', scheduledEnd: '4:30 PM' },
+    { id: '4', name: 'Mike Rodriguez', scheduledStart: '10:00 AM', scheduledEnd: '6:00 PM' },
+    { id: '5', name: 'Emma Wilson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '6', name: 'David Brown', scheduledStart: '8:00 AM', scheduledEnd: '4:00 PM' },
+  ];
   
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
@@ -82,7 +88,7 @@ export const ScheduleVerification = () => {
   }
 
   if (showTimeEntry) {
-    return <TimeEntry onSubmit={handleTimeSubmit} onBack={() => setShowTimeEntry(false)} selectedDate={selectedDate} />;
+    return <TimeEntry onSubmit={handleTimeSubmit} onBack={() => setShowTimeEntry(false)} selectedDate={selectedDate} crewMembers={crewMembers} />;
   }
 
   return (
@@ -143,27 +149,30 @@ export const ScheduleVerification = () => {
         </CardHeader>
         
         <CardContent className="space-y-6">
-          <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-            <h3 className="font-semibold text-foreground mb-3">Your Scheduled Hours</h3>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">Start Time:</span>
-              <span className="font-medium text-foreground">{scheduledStart}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-muted-foreground">End Time:</span>
-              <span className="font-medium text-foreground">{scheduledEnd}</span>
-            </div>
-            <div className="border-t border-border pt-2 mt-3">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Total Hours:</span>
-                <span className="font-semibold text-foreground">8 hours</span>
-              </div>
+          <div className="bg-muted/50 rounded-lg p-4 space-y-4">
+            <h3 className="font-semibold text-foreground mb-3">Crew Scheduled Hours</h3>
+            <div className="space-y-3">
+              {crewMembers.map((member) => (
+                <div key={member.id} className="bg-background/50 rounded-md p-3 space-y-2">
+                  <h4 className="font-medium text-foreground text-sm">{member.name}</h4>
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Start:</span>
+                      <span className="font-medium text-foreground">{member.scheduledStart}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">End:</span>
+                      <span className="font-medium text-foreground">{member.scheduledEnd}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="space-y-4">
             <p className="text-center text-foreground font-medium">
-              Did you work your scheduled hours on this day?
+              Did everyone work their scheduled hours on this day?
             </p>
             
             <div className="space-y-3">
@@ -174,7 +183,7 @@ export const ScheduleVerification = () => {
                 onClick={handleConfirmSchedule}
               >
                 <CheckCircle className="w-5 h-5 mr-2" />
-                Yes, I worked my scheduled hours
+                Yes, everyone worked scheduled hours
               </Button>
               
               <Button 
@@ -184,7 +193,7 @@ export const ScheduleVerification = () => {
                 onClick={handleDenySchedule}
               >
                 <XCircle className="w-5 h-5 mr-2" />
-                No, I worked different hours
+                No, need to edit hours
               </Button>
             </div>
           </div>
