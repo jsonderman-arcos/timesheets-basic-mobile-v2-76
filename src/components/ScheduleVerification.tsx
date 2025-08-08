@@ -149,6 +149,34 @@ export const ScheduleVerification = () => {
         </CardHeader>
         
         <CardContent className="space-y-6">
+          <div className="space-y-4">
+            <p className="text-center text-foreground font-medium">
+              Did everyone work their scheduled hours on this day?
+            </p>
+            
+            <div className="space-y-3">
+              <Button 
+                variant="success" 
+                size="lg" 
+                className="w-full"
+                onClick={handleConfirmSchedule}
+              >
+                <CheckCircle className="w-5 h-5 mr-2" />
+                Yes, everyone worked scheduled hours
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="w-full"
+                onClick={handleDenySchedule}
+              >
+                <XCircle className="w-5 h-5 mr-2" />
+                No, need to edit hours
+              </Button>
+            </div>
+          </div>
+
           <div className="bg-muted/50 rounded-lg p-4 space-y-4">
             <h3 className="font-semibold text-foreground mb-3">Scheduled Hours</h3>
             <div className="bg-background/50 rounded-md p-3 space-y-2">
@@ -179,34 +207,6 @@ export const ScheduleVerification = () => {
                   </div>
                 ))}
               </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <p className="text-center text-foreground font-medium">
-              Did everyone work their scheduled hours on this day?
-            </p>
-            
-            <div className="space-y-3">
-              <Button 
-                variant="success" 
-                size="lg" 
-                className="w-full"
-                onClick={handleConfirmSchedule}
-              >
-                <CheckCircle className="w-5 h-5 mr-2" />
-                Yes, everyone worked scheduled hours
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="w-full"
-                onClick={handleDenySchedule}
-              >
-                <XCircle className="w-5 h-5 mr-2" />
-                No, need to edit hours
-              </Button>
             </div>
           </div>
         </CardContent>
