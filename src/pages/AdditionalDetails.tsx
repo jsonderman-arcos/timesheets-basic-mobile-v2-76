@@ -38,8 +38,8 @@ const AdditionalDetails = () => {
           </div>
 
           <section aria-labelledby="activity-hours-heading" className="space-y-3">
-            <h2 id="activity-hours-heading" className="text-sm font-medium text-foreground">
-              Activity Hours
+            <h2 id="activity-hours-heading" className="text-base font-semibold text-foreground">
+              Hours Breakdown
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div className="space-y-1">
