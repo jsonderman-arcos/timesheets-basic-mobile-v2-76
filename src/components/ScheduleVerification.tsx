@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -12,6 +13,7 @@ export const ScheduleVerification = () => {
   const [showTimeEntry, setShowTimeEntry] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const navigate = useNavigate();
 
   // Mock crew data - all with same schedule
   const crewMembers = [
@@ -56,9 +58,9 @@ export const ScheduleVerification = () => {
     }
   };
 
-  const handleConfirmSchedule = () => {
-    setIsCompleted(true);
-  };
+const handleConfirmSchedule = () => {
+  navigate('/additional-details');
+};
 
   const handleDenySchedule = () => {
     setShowTimeEntry(true);
