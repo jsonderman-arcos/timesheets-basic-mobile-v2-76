@@ -74,8 +74,7 @@ const handleConfirmSchedule = () => {
   };
 
   const handleTimeSubmit = () => {
-    setIsCompleted(true);
-    setShowTimeEntry(false);
+    navigate('/additional-details');
   };
 
   if (isCompleted) {
