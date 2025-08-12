@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Clock, Save } from 'lucide-react';
 
 interface CrewMember {
@@ -20,21 +21,20 @@ interface TimeEntryProps {
 }
 
 export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeEntryProps) => {
+  const convertTo24Hour = (time12h: string) => {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    if (hours === '12') {
+      hours = '00';
+    }
+    if (modifier === 'PM') {
+      hours = (parseInt(hours, 10) + 12).toString();
+    }
+    return `${hours.toString().padStart(2, '0')}:${minutes}`;
+  };
+
   const [timeEntries, setTimeEntries] = useState(() => 
     crewMembers.reduce((acc, member) => {
-      // Convert scheduled times to 24-hour format for input
-      const convertTo24Hour = (time12h: string) => {
-        const [time, modifier] = time12h.split(' ');
-        let [hours, minutes] = time.split(':');
-        if (hours === '12') {
-          hours = '00';
-        }
-        if (modifier === 'PM') {
-          hours = (parseInt(hours, 10) + 12).toString();
-        }
-        return `${hours.toString().padStart(2, '0')}:${minutes}`;
-      };
-      
       acc[member.id] = {
         startTime: convertTo24Hour(member.scheduledStart),
         endTime: convertTo24Hour(member.scheduledEnd),
@@ -42,6 +42,27 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
       return acc;
     }, {} as Record<string, { startTime: string; endTime: string }>)
   );
+
+  const [editIndividually, setEditIndividually] = useState(false);
+
+  const [groupTimes, setGroupTimes] = useState<{ startTime: string; endTime: string }>(() => {
+    const first = crewMembers[0];
+    return first
+      ? {
+          startTime: convertTo24Hour(first.scheduledStart),
+          endTime: convertTo24Hour(first.scheduledEnd),
+        }
+      : { startTime: '', endTime: '' };
+  });
+
+  useEffect(() => {
+    if (!editIndividually && crewMembers.length > 0) {
+      const first = crewMembers[0];
+      const firstEntry = timeEntries[first.id] || { startTime: '', endTime: '' };
+      setGroupTimes({ startTime: firstEntry.startTime, endTime: firstEntry.endTime });
+    }
+  }, [editIndividually, crewMembers, timeEntries]);
+
 
   const updateTimeEntry = (memberId: string, field: 'startTime' | 'endTime', value: string) => {
     setTimeEntries(prev => ({
@@ -51,6 +72,17 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
         [field]: value,
       }
     }));
+  };
+
+  const updateAllEntries = (field: 'startTime' | 'endTime', value: string) => {
+    setGroupTimes(prev => ({ ...prev, [field]: value }));
+    setTimeEntries(prev => {
+      const updated = { ...prev };
+      crewMembers.forEach(member => {
+        updated[member.id] = { ...updated[member.id], [field]: value };
+      });
+      return updated;
+    });
   };
 
   const calculateHours = (startTime: string, endTime: string) => {
@@ -106,6 +138,58 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4 max-h-96 overflow-y-auto">
+              <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                <Label htmlFor="edit-individually" className="text-foreground font-medium">Edit Individually</Label>
+                <Switch
+                  id="edit-individually"
+                  checked={editIndividually}
+                  onCheckedChange={setEditIndividually}
+                />
+              </div>
+
+              {!editIndividually && (
+                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <h4 className="font-semibold text-foreground">All Crew</h4>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="group-start" className="text-foreground font-medium text-sm">
+                        Start Time
+                      </Label>
+                      <Input
+                        id="group-start"
+                        type="time"
+                        value={groupTimes.startTime}
+                        onChange={(e) => updateAllEntries('startTime', e.target.value)}
+                        className="text-sm"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="group-end" className="text-foreground font-medium text-sm">
+                        End Time
+                      </Label>
+                      <Input
+                        id="group-end"
+                        type="time"
+                        value={groupTimes.endTime}
+                        onChange={(e) => updateAllEntries('endTime', e.target.value)}
+                        className="text-sm"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {calculateHours(groupTimes.startTime, groupTimes.endTime) && (
+                    <div className="bg-background/50 rounded-md p-2 text-center">
+                      <span className="text-muted-foreground text-sm">Total Hours: </span>
+                      <span className="font-semibold text-foreground text-sm">{calculateHours(groupTimes.startTime, groupTimes.endTime)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {crewMembers.map((member) => {
                 const entry = timeEntries[member.id];
                 const hours = calculateHours(entry.startTime, entry.endTime);
@@ -126,6 +210,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                           onChange={(e) => updateTimeEntry(member.id, 'startTime', e.target.value)}
                           className="text-sm"
                           required
+                          disabled={!editIndividually}
                         />
                       </div>
                       
@@ -140,6 +225,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                           onChange={(e) => updateTimeEntry(member.id, 'endTime', e.target.value)}
                           className="text-sm"
                           required
+                          disabled={!editIndividually}
                         />
                       </div>
                     </div>
