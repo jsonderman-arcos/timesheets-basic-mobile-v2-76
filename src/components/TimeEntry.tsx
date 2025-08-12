@@ -190,7 +190,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                 </div>
               )}
 
-              {crewMembers.map((member) => {
+              {editIndividually && crewMembers.map((member) => {
                 const entry = timeEntries[member.id];
                 const hours = calculateHours(entry.startTime, entry.endTime);
                 
@@ -229,7 +229,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                         />
                       </div>
                     </div>
-
+                    
                     {hours && (
                       <div className="bg-background/50 rounded-md p-2 text-center">
                         <span className="text-muted-foreground text-sm">Total Hours: </span>
