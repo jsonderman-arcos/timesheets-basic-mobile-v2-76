@@ -81,12 +81,12 @@ const AdditionalDetails = () => {
             </div>
           </section>
         </CardContent>
-        <CardFooter className="justify-between">
-          <Button variant="outline" onClick={handleBack} aria-label="Go back to previous screen">
-            Back
-          </Button>
-          <Button onClick={handleSubmit} aria-label="Submit notes">
+        <CardFooter className="flex flex-col gap-3 w-full">
+          <Button onClick={handleSubmit} aria-label="Submit notes" className="w-full">
             Submit
+          </Button>
+          <Button variant="outline" onClick={handleBack} aria-label="Go back to previous screen" className="w-full">
+            Back
           </Button>
         </CardFooter>
       </Card>
