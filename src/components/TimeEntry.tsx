@@ -149,7 +149,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
 
               {!editIndividually && (
                 <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                  <h4 className="font-semibold text-foreground">All Crew</h4>
+                  <h4 className="font-semibold text-foreground">All Crew Members</h4>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
@@ -240,6 +240,19 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                 );
               })}
             </div>
+
+            {!editIndividually && (
+              <div>
+                <h4 className="font-medium text-foreground mb-2">Crew Members</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {crewMembers.map((member) => (
+                    <div key={member.id} className="bg-background/50 rounded-md px-3 py-2">
+                      <span className="text-foreground text-sm">{member.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-3">
               <Button 
