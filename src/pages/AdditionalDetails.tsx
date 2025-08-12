@@ -9,7 +9,7 @@ const AdditionalDetails = () => {
   const navigate = useNavigate();
   const handleBack = () => navigate(-1);
   const handleSubmit = () => {
-    console.log("Notes submitted");
+    navigate("/", { state: { showSuccess: true } });
   };
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
@@ -14,6 +14,13 @@ export const ScheduleVerification = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const navigate = useNavigate();
+  const location = useLocation();
+  useEffect(() => {
+    const st = location.state as any;
+    if (st?.showSuccess) {
+      setIsCompleted(true);
+    }
+  }, [location.state]);
 
   // Mock crew data - all with same schedule
   const crewMembers = [
