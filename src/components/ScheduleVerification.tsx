@@ -164,7 +164,7 @@ const handleConfirmSchedule = () => {
             
             <div className="space-y-3">
               <Button 
-                variant="destructive" 
+                variant="success" 
                 size="lg" 
                 className="w-full"
                 onClick={handleConfirmSchedule}
