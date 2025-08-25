@@ -117,12 +117,12 @@ export const ScheduleVerification = () => {
     }
   };
 
-  // Use real crew member IDs from the database
+  // Use real crew member IDs from the database with updated default hours (6am-10pm = 16 hours)
   const crewMembers = [
-    { id: '3751647d-f0ae-4d62-a0a1-9a0bd3dbc2b1', name: 'David Brown', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '47e34e83-b887-4d79-82a9-ffc1f63f5e17', name: 'John Smith', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: 'c648a699-cf2a-4ac7-bce8-19883a0db42b', name: 'Mike Johnson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '54704459-cf20-4137-9f6c-0c58ab8ac8b9', name: 'Sarah Williams', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '3751647d-f0ae-4d62-a0a1-9a0bd3dbc2b1', name: 'David Brown', scheduledStart: '6:00 AM', scheduledEnd: '10:00 PM' },
+    { id: '47e34e83-b887-4d79-82a9-ffc1f63f5e17', name: 'John Smith', scheduledStart: '6:00 AM', scheduledEnd: '10:00 PM' },
+    { id: 'c648a699-cf2a-4ac7-bce8-19883a0db42b', name: 'Mike Johnson', scheduledStart: '6:00 AM', scheduledEnd: '10:00 PM' },
+    { id: '54704459-cf20-4137-9f6c-0c58ab8ac8b9', name: 'Sarah Williams', scheduledStart: '6:00 AM', scheduledEnd: '10:00 PM' },
   ];
   
   const formatDate = (date: Date) => {
@@ -151,10 +151,10 @@ export const ScheduleVerification = () => {
   };
 
   const handleConfirmSchedule = () => {
-    // Calculate individual member hours (all scheduled for 8 hours)
+    // Calculate individual member hours (all scheduled for 16 hours)
     const memberHours = crewMembers.map(member => ({
       memberId: member.id,
-      hours: 8
+      hours: 16
     }));
     navigate('/additional-details', { 
       state: { memberHours, editedIndividually: false }
@@ -287,32 +287,32 @@ export const ScheduleVerification = () => {
             </Box>
             
             {/* Summary Stats */}
-            <Box sx={{ display: 'flex', gap: 3, mb: 3 }}>
+            <Box sx={{ display: 'flex', gap: 4, mb: 3, justifyContent: 'center' }}>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" fontWeight="bold" color="primary.main">
+                <Typography variant="h3" fontWeight="bold" color="primary.main">
                   {timeEntries.reduce((total, entry) => total + parseFloat(entry.hours_regular), 0).toFixed(1)}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Hours
+                <Typography variant="body1" color="text.secondary" fontWeight="medium">
+                  Total Hours Logged
                 </Typography>
               </Box>
               <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" fontWeight="bold" color="primary.main">
+                <Typography variant="h3" fontWeight="bold" color="primary.main">
                   {timeEntries.length}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body1" color="text.secondary" fontWeight="medium">
                   Crew Members
                 </Typography>
               </Box>
               {hoursBreakdown.length > 0 && (
                 <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="h4" fontWeight="bold" color="primary.main">
+                  <Typography variant="h3" fontWeight="bold" color="primary.main">
                     {['working', 'traveling', 'standby'].filter(type => 
                       hoursBreakdown.some(b => b.breakdown_type === type)
                     ).length}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Categories
+                  <Typography variant="body1" color="text.secondary" fontWeight="medium">
+                    Hour Categories
                   </Typography>
                 </Box>
               )}
@@ -340,8 +340,13 @@ export const ScheduleVerification = () => {
                       <Typography variant="body2" color="text.secondary">
                         {entry.start_time} - {entry.end_time}
                       </Typography>
+                      {entry.comments && (
+                        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mt: 0.5 }}>
+                          Note: {entry.comments}
+                        </Typography>
+                      )}
                     </Box>
-                    <Typography variant="h6" color="text.primary">
+                    <Typography variant="h6" color="text.primary" fontWeight="bold">
                       {entry.hours_regular.toFixed(1)}h
                     </Typography>
                   </Box>
@@ -526,18 +531,10 @@ export const ScheduleVerification = () => {
               </Box>
             </Box>
             
-            <Box sx={{ 
-              borderTop: 1, 
-              borderColor: 'divider', 
-              pt: 1, 
-              mt: 2,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-              <Typography color="text.secondary">Total Hours:</Typography>
-              <Typography fontWeight="bold" color="text.primary">8 hours</Typography>
-            </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography color="text.secondary">Total Hours:</Typography>
+                <Typography fontWeight="bold" color="text.primary" variant="h6">16 hours</Typography>
+              </Box>
           </Paper>
           
           <Box>
