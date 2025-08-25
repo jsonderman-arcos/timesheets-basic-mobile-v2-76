@@ -23,7 +23,7 @@ const AdditionalDetails = () => {
 
       <div className="flex items-start justify-center min-h-full p-4">
         <Card className="w-full max-w-md shadow-[var(--shadow-soft)] border-0 bg-[var(--gradient-card)]">
-          <CardContent className="space-y-6"
+          <CardContent className="space-y-6">
             <section aria-labelledby="activity-hours-heading" className="space-y-3">
               <div className="flex items-baseline gap-2">
                 <h2 id="activity-hours-heading" className="text-base font-semibold text-foreground">
