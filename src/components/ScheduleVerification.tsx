@@ -74,10 +74,13 @@ export const ScheduleVerification = () => {
   };
 
   const handleConfirmSchedule = () => {
-    // Calculate scheduled hours for all crew members
-    const scheduledHours = crewMembers.length * 8; // 8 hours per person
+    // Calculate individual member hours (all scheduled for 8 hours)
+    const memberHours = crewMembers.map(member => ({
+      memberId: member.id,
+      hours: 8
+    }));
     navigate('/additional-details', { 
-      state: { totalHours: scheduledHours }
+      state: { memberHours }
     });
   };
 
@@ -85,9 +88,9 @@ export const ScheduleVerification = () => {
     setShowTimeEntry(true);
   };
 
-  const handleTimeSubmit = (totalHours: number) => {
+  const handleTimeSubmit = (memberHours: { memberId: string; hours: number }[]) => {
     navigate('/additional-details', { 
-      state: { totalHours }
+      state: { memberHours }
     });
   };
 

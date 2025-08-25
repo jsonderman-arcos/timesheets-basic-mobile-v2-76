@@ -13,6 +13,7 @@ import {
 import { ArrowBack, Save } from '@mui/icons-material';
 import { Layout } from './Layout';
 import { toast } from 'react-toastify';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CrewMember {
   id: string;
@@ -22,7 +23,7 @@ interface CrewMember {
 }
 
 interface TimeEntryProps {
-  onSubmit: (totalHours: number) => void;
+  onSubmit: (memberHours: { memberId: string; hours: number }[]) => void;
   onBack: () => void;
   selectedDate: Date;
   crewMembers: CrewMember[];
@@ -90,33 +91,58 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
     return Math.max(0, (endMinutes - startMinutes) / 60);
   };
 
-  const getTotalWorkedHours = () => {
-    if (editIndividually) {
-      // For individual editing, calculate total for all crew members
-      return crewMembers.reduce((total, member) => {
-        const entry = timeEntries[member.id];
-        return total + calculateHours(entry?.startTime || '', entry?.endTime || '');
-      }, 0);
-    } else {
-      // For group editing, multiply hours by crew size
-      const hoursPerPerson = calculateHours(groupTimes.startTime, groupTimes.endTime);
-      return hoursPerPerson * crewMembers.length;
-    }
-  };
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Validate all entries
     const allValid = crewMembers.every(member => {
       const entry = timeEntries[member.id];
       return entry.startTime && entry.endTime && entry.startTime < entry.endTime;
     });
 
-    if (allValid) {
-      const totalHours = getTotalWorkedHours();
-      toast.success('Time entries saved successfully!');
-      onSubmit(totalHours);
-    } else {
+    if (!allValid) {
       toast.error('Please ensure all times are valid and end time is after start time.');
+      return;
+    }
+
+    try {
+      // Prepare member hours data
+      const memberHours = crewMembers.map(member => {
+        const entry = timeEntries[member.id];
+        const hours = calculateHours(entry.startTime, entry.endTime);
+        return {
+          memberId: member.id,
+          hours,
+          startTime: entry.startTime,
+          endTime: entry.endTime
+        };
+      });
+
+      // Save to database - for now we'll use mock crew_id and member_id
+      // In a real app, these would come from authenticated user data
+      const timeEntryInserts = memberHours.map(memberData => ({
+        date: selectedDate.toISOString().split('T')[0],
+        start_time: memberData.startTime,
+        end_time: memberData.endTime,
+        hours_regular: memberData.hours,
+        crew_id: '00000000-0000-0000-0000-000000000001', // Mock crew_id
+        member_id: '00000000-0000-0000-0000-000000000001', // Mock member_id
+        status: 'submitted'
+      }));
+
+      const { error } = await supabase
+        .from('time_entries')
+        .insert(timeEntryInserts);
+
+      if (error) {
+        console.error('Error saving time entries:', error);
+        toast.error('Failed to save time entries. Please try again.');
+        return;
+      }
+
+      toast.success('Time entries saved successfully!');
+      onSubmit(memberHours.map(m => ({ memberId: m.memberId, hours: m.hours })));
+    } catch (error) {
+      console.error('Error saving time entries:', error);
+      toast.error('Failed to save time entries. Please try again.');
     }
   };
 
@@ -177,7 +203,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                 />
               </Box>
               <Typography variant="body2" color="text.secondary">
-                Total: {calculateHours(groupTimes.startTime, groupTimes.endTime).toFixed(1)} hours
+                Hours: {calculateHours(groupTimes.startTime, groupTimes.endTime).toFixed(1)} per person
               </Typography>
             </CardContent>
           </Card>
@@ -210,38 +236,16 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                     />
                   </Box>
                   <Typography variant="body2" color="text.secondary">
-                    Total: {calculateHours(
+                    Hours: {calculateHours(
                       timeEntries[member.id]?.startTime || '',
                       timeEntries[member.id]?.endTime || ''
-                    ).toFixed(1)} hours
+                    ).toFixed(1)}
                   </Typography>
                 </CardContent>
               </Card>
             ))}
           </Box>
-         )}
-
-         {/* Total Hours Summary */}
-         <Card sx={{ mb: 2, bgcolor: 'background.default' }}>
-           <CardContent sx={{ py: 2 }}>
-             <Typography variant="h6" color="text.primary" gutterBottom>
-               Total Hours Summary
-             </Typography>
-             <Typography variant="body1" color="text.secondary">
-               Total logged hours for all crew members: <strong>{getTotalWorkedHours().toFixed(1)} hours</strong>
-             </Typography>
-             {editIndividually && (
-               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                 ({crewMembers.length} crew members × individual hours)
-               </Typography>
-             )}
-             {!editIndividually && (
-               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                 ({crewMembers.length} crew members × {calculateHours(groupTimes.startTime, groupTimes.endTime).toFixed(1)} hours each)
-               </Typography>
-             )}
-           </CardContent>
-         </Card>
+        )}
 
         <Button
           variant="contained"

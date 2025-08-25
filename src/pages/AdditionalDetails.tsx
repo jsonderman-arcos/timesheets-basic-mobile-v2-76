@@ -18,13 +18,10 @@ const AdditionalDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get total hours from query params or location state (passed from time entry)
-  const searchParams = new URLSearchParams(location.search);
-  const totalHours = parseFloat(
-    searchParams.get('totalHours') || 
-    location.state?.totalHours || 
-    '8.0'
-  );
+  // Get member hours from location state (passed from time entry)
+  const memberHours = location.state?.memberHours || [];
+  const totalHours = memberHours.reduce((total: number, member: any) => total + member.hours, 0) || 
+                    parseFloat(new URLSearchParams(location.search).get('totalHours') || '8.0');
   
   const [workingHours, setWorkingHours] = useState('');
   const [travelingHours, setTravelingHours] = useState('');
