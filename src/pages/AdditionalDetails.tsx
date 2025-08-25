@@ -9,7 +9,7 @@ import { Layout } from "@/components/Layout";
 
 const AdditionalDetails = () => {
   const navigate = useNavigate();
-  const handleBack = () => navigate(-1);
+  const handleBack = () => navigate("/");
   const handleSubmit = () => {
     navigate("/", { state: { showSuccess: true } });
   };
