@@ -49,6 +49,9 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
 
+    /* Brand tokens */
+    --brand-dark-500: 220 20% 25%;
+
     --sidebar-background: 0 0% 98%;
 
     --sidebar-foreground: 240 5.3% 26.1%;

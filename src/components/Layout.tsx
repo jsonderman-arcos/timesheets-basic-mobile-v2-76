@@ -72,7 +72,11 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           borderColor: 'divider'
         }}
       >
-        <Toolbar sx={{ minHeight: '64px !important', px: 2 }}>
+        <Toolbar sx={{ 
+          minHeight: '64px !important', 
+          px: 2,
+          bgcolor: 'hsl(var(--brand-dark-500))'
+        }}>
           {onBack && (
             <IconButton 
               edge="start" 
