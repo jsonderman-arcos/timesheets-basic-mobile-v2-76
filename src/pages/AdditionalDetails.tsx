@@ -23,9 +23,6 @@ const AdditionalDetails = () => {
 
       <div className="flex items-start justify-center min-h-full p-4">
         <Card className="w-full max-w-md shadow-[var(--shadow-soft)] border-0 bg-[var(--gradient-card)]">
-          <CardHeader>
-            <h1 className="text-2xl font-bold text-foreground">Additional Details</h1>
-          </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-foreground">
