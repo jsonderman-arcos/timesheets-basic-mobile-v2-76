@@ -263,6 +263,16 @@ const handleConfirmSchedule = () => {
                 </Button>
               ))}
             </div>
+            
+            {/* Collapse Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute bottom-2 left-2"
+              onClick={() => setShowFabMenu(false)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
           </div>
         </>
       )}
