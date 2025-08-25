@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Clock, CheckCircle, XCircle, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Grid3X3, LayoutDashboard, Truck, Wrench, ClipboardCheck, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -13,6 +12,7 @@ import { TimeEntry } from './TimeEntry';
 export const ScheduleVerification = () => {
   const [showTimeEntry, setShowTimeEntry] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [showFabMenu, setShowFabMenu] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const navigate = useNavigate();
   const location = useLocation();
@@ -231,30 +231,41 @@ const handleConfirmSchedule = () => {
       </div>
 
       {/* FAB Menu */}
-      <Sheet>
-        <SheetTrigger asChild>
-          <Button
-            size="icon"
-            className="absolute bottom-4 left-4 h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg z-50"
-          >
-            <Grid3X3 className="h-6 w-6" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="bottom" className="h-auto rounded-t-xl border-0 mx-0 w-full">
-          <div className="grid grid-cols-2 gap-4 p-4">
-            {menuItems.map((item) => (
-              <Button
-                key={item.name}
-                variant={item.active ? "default" : "outline"}
-                className="h-16 flex flex-col gap-2"
-              >
-                <item.icon className="h-5 w-5" />
-                <span className="text-xs">{item.name}</span>
-              </Button>
-            ))}
+      <Button
+        size="icon"
+        className="absolute bottom-4 left-4 h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg z-50"
+        onClick={() => setShowFabMenu(!showFabMenu)}
+      >
+        <Grid3X3 className="h-6 w-6" />
+      </Button>
+
+      {/* Custom Menu Modal - stays within iPhone wrapper */}
+      {showFabMenu && (
+        <>
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 z-40"
+            onClick={() => setShowFabMenu(false)}
+          />
+          
+          {/* Menu Content */}
+          <div className="absolute bottom-0 left-0 right-0 bg-background rounded-t-xl border-0 z-50 p-4">
+            <div className="grid grid-cols-2 gap-4">
+              {menuItems.map((item) => (
+                <Button
+                  key={item.name}
+                  variant={item.active ? "default" : "outline"}
+                  className="h-16 flex flex-col gap-2"
+                  onClick={() => setShowFabMenu(false)}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="text-xs">{item.name}</span>
+                </Button>
+              ))}
+            </div>
           </div>
-        </SheetContent>
-      </Sheet>
+        </>
+      )}
     </div>
   );
 };
