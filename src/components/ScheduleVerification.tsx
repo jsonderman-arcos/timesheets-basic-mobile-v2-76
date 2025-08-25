@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Clock, CheckCircle, XCircle, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Clock, CheckCircle, XCircle, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Grid3X3, LayoutDashboard, Truck, Wrench, ClipboardCheck, DollarSign } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { TimeEntry } from './TimeEntry';
@@ -76,6 +77,15 @@ const handleConfirmSchedule = () => {
   const handleTimeSubmit = () => {
     navigate('/additional-details');
   };
+
+  const menuItems = [
+    { name: 'Dashboard', icon: LayoutDashboard, active: false },
+    { name: 'Convoys', icon: Truck, active: false },
+    { name: 'Repair', icon: Wrench, active: false },
+    { name: 'Assess', icon: ClipboardCheck, active: false },
+    { name: 'Time Tracking', icon: Clock, active: true },
+    { name: 'Expenses', icon: DollarSign, active: false },
+  ];
 
   if (isCompleted) {
     return (
@@ -219,6 +229,36 @@ const handleConfirmSchedule = () => {
           </div>
         </div>
       </div>
+
+      {/* FAB Menu */}
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button
+            size="icon"
+            className="fixed bottom-4 left-4 h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg z-50"
+          >
+            <Grid3X3 className="h-6 w-6" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="bottom" className="h-auto">
+          <SheetHeader>
+            <SheetTitle>Navigation</SheetTitle>
+            <SheetDescription>Select a section to navigate to</SheetDescription>
+          </SheetHeader>
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            {menuItems.map((item) => (
+              <Button
+                key={item.name}
+                variant={item.active ? "default" : "outline"}
+                className="h-16 flex flex-col gap-2"
+              >
+                <item.icon className="h-5 w-5" />
+                <span className="text-xs">{item.name}</span>
+              </Button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
