@@ -8,7 +8,8 @@ import {
   Box,
   IconButton,
   Paper,
-  Chip
+  Chip,
+  Divider
 } from '@mui/material';
 import {
   CheckCircle,
@@ -16,17 +17,23 @@ import {
   ChevronLeft,
   ChevronRight,
   CalendarToday,
-  Schedule
+  Schedule,
+  Edit
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { TimeEntry } from './TimeEntry';
 import { Layout } from './Layout';
 import { toast } from 'react-toastify';
+import { supabase } from '@/integrations/supabase/client';
 
 export const ScheduleVerification = () => {
   const [showTimeEntry, setShowTimeEntry] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [hasTimeEntries, setHasTimeEntries] = useState(false);
+  const [timeEntries, setTimeEntries] = useState<any[]>([]);
+  const [hoursBreakdown, setHoursBreakdown] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -37,6 +44,61 @@ export const ScheduleVerification = () => {
       toast.success('Schedule updated successfully!');
     }
   }, [location.state]);
+
+  // Check for existing time entries when date changes
+  useEffect(() => {
+    checkExistingTimeEntries();
+  }, [selectedDate]);
+
+  const checkExistingTimeEntries = async () => {
+    setLoading(true);
+    try {
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      
+      // Check for time entries for this date
+      const { data: entries, error: entriesError } = await supabase
+        .from('time_entries')
+        .select(`
+          *,
+          crew_members!inner(name)
+        `)
+        .eq('date', dateStr)
+        .eq('crew_id', '8685dabc-746e-4fe8-90a3-c41035c79dc0');
+
+      if (entriesError) {
+        console.error('Error fetching time entries:', entriesError);
+        setHasTimeEntries(false);
+        setTimeEntries([]);
+        setHoursBreakdown([]);
+        setLoading(false);
+        return;
+      }
+
+      if (entries && entries.length > 0) {
+        setHasTimeEntries(true);
+        setTimeEntries(entries);
+
+        // Fetch hours breakdown for these time entries
+        const { data: breakdown, error: breakdownError } = await supabase
+          .from('hours_breakdown')
+          .select('*')
+          .in('time_entry_id', entries.map(e => e.id));
+
+        if (!breakdownError && breakdown) {
+          setHoursBreakdown(breakdown);
+        }
+      } else {
+        setHasTimeEntries(false);
+        setTimeEntries([]);
+        setHoursBreakdown([]);
+      }
+    } catch (error) {
+      console.error('Error checking time entries:', error);
+      setHasTimeEntries(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Use real crew member IDs from the database
   const crewMembers = [
@@ -86,10 +148,24 @@ export const ScheduleVerification = () => {
     setShowTimeEntry(true);
   };
 
+  const handleUpdateHours = () => {
+    setShowTimeEntry(true);
+  };
+
+  const getCrewMemberName = (memberId: string) => {
+    switch (memberId) {
+      case '3751647d-f0ae-4d62-a0a1-9a0bd3dbc2b1': return 'David Brown';
+      case '47e34e83-b887-4d79-82a9-ffc1f63f5e17': return 'John Smith';
+      case 'c648a699-cf2a-4ac7-bce8-19883a0db42b': return 'Mike Johnson';
+      case '54704459-cf20-4137-9f6c-0c58ab8ac8b9': return 'Sarah Williams';
+      default: return 'Unknown Member';
+    }
+  };
+
   const handleTimeSubmit = (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean) => {
-    navigate('/additional-details', { 
-      state: { memberHours, editedIndividually }
-    });
+    // Refresh the data after time entry submission
+    checkExistingTimeEntries();
+    setShowTimeEntry(false);
   };
 
   if (isCompleted) {
@@ -126,6 +202,142 @@ export const ScheduleVerification = () => {
 
   if (showTimeEntry) {
     return <TimeEntry onSubmit={handleTimeSubmit} onBack={() => setShowTimeEntry(false)} selectedDate={selectedDate} crewMembers={crewMembers} />;
+  }
+
+  // Show completed hours view if time entries exist
+  if (hasTimeEntries) {
+    return (
+      <Layout title="Schedule Verification">
+        <Box sx={{ p: 2 }}>
+          {/* Date Navigation */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            gap: 1, 
+            mb: 3 
+          }}>
+            <IconButton 
+              onClick={goToPreviousDay}
+              size="small"
+              sx={{ color: 'text.secondary' }}
+            >
+              <ChevronLeft />
+            </IconButton>
+            
+            <Button
+              variant="text"
+              startIcon={<CalendarToday />}
+              sx={{ 
+                color: 'text.primary',
+                fontWeight: 'normal',
+                textTransform: 'none'
+              }}
+            >
+              {formatDate(selectedDate)}
+            </Button>
+            
+            <IconButton 
+              onClick={goToNextDay}
+              size="small"
+              sx={{ color: 'text.secondary' }}
+            >
+              <ChevronRight />
+            </IconButton>
+          </Box>
+
+          {/* Completed Hours Display */}
+          <Paper sx={{ 
+            bgcolor: 'background.paper', 
+            p: 3, 
+            borderRadius: 2,
+            border: 1,
+            borderColor: 'divider',
+            mb: 3
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <CheckCircle sx={{ color: 'success.main' }} />
+              <Typography variant="h6" fontWeight="semibold" color="text.primary">
+                Hours Logged
+              </Typography>
+            </Box>
+            
+            {/* Crew Members and Hours */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle1" fontWeight="medium" color="text.primary" gutterBottom>
+                Crew Members ({timeEntries.length})
+              </Typography>
+              {timeEntries.map((entry) => (
+                <Paper key={entry.id} sx={{ 
+                  bgcolor: 'background.default', 
+                  p: 2, 
+                  mb: 1,
+                  borderRadius: 1
+                }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                      <Typography variant="body1" fontWeight="medium" color="text.primary">
+                        {getCrewMemberName(entry.member_id)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {entry.start_time} - {entry.end_time}
+                      </Typography>
+                    </Box>
+                    <Typography variant="h6" color="text.primary">
+                      {entry.hours_regular.toFixed(1)}h
+                    </Typography>
+                  </Box>
+                </Paper>
+              ))}
+            </Box>
+
+            {/* Hours Breakdown */}
+            {hoursBreakdown.length > 0 && (
+              <Box>
+                <Divider sx={{ mb: 2 }} />
+                <Typography variant="subtitle1" fontWeight="medium" color="text.primary" gutterBottom>
+                  Hours Breakdown
+                </Typography>
+                {['working', 'traveling', 'standby'].map(type => {
+                  const typeBreakdowns = hoursBreakdown.filter(b => b.breakdown_type === type);
+                  if (typeBreakdowns.length === 0) return null;
+                  
+                  const totalHours = typeBreakdowns.reduce((sum, b) => sum + parseFloat(b.hours), 0);
+                  
+                  return (
+                    <Box key={type} sx={{ mb: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
+                          {type}
+                        </Typography>
+                        <Typography variant="body2" fontWeight="medium" color="text.primary">
+                          {totalHours.toFixed(1)}h
+                        </Typography>
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Box>
+            )}
+          </Paper>
+
+          {/* Update Button */}
+          <Button
+            variant="outlined"
+            fullWidth
+            startIcon={<Edit />}
+            onClick={handleUpdateHours}
+            sx={{ 
+              py: 1.5,
+              textTransform: 'none',
+              fontSize: '1rem'
+            }}
+          >
+            I need to update today's hours
+          </Button>
+        </Box>
+      </Layout>
+    );
   }
 
   return (
