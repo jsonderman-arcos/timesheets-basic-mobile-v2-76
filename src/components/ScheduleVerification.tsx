@@ -40,12 +40,10 @@ export const ScheduleVerification = () => {
 
   // Use real crew member IDs from the database
   const crewMembers = [
-    { id: '00000000-0000-0000-0000-000000000001', name: 'You', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '00000000-0000-0000-0000-000000000002', name: 'Alex Johnson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '00000000-0000-0000-0000-000000000003', name: 'Sarah Davis', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '00000000-0000-0000-0000-000000000004', name: 'Mike Rodriguez', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '00000000-0000-0000-0000-000000000005', name: 'Emma Wilson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '00000000-0000-0000-0000-000000000006', name: 'David Brown', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '3751647d-f0ae-4d62-a0a1-9a0bd3dbc2b1', name: 'David Brown', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '47e34e83-b887-4d79-82a9-ffc1f63f5e17', name: 'John Smith', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: 'c648a699-cf2a-4ac7-bce8-19883a0db42b', name: 'Mike Johnson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '54704459-cf20-4137-9f6c-0c58ab8ac8b9', name: 'Sarah Williams', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
   ];
   
   const formatDate = (date: Date) => {

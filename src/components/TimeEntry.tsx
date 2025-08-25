@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -42,24 +42,79 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
     return `${hours.toString().padStart(2, '0')}:${minutes}`;
   };
 
-  const [timeEntries, setTimeEntries] = useState(() => 
-    crewMembers.reduce((acc, member) => {
-      acc[member.id] = {
-        startTime: convertTo24Hour(member.scheduledStart),
-        endTime: convertTo24Hour(member.scheduledEnd),
-      };
-      return acc;
-    }, {} as Record<string, { startTime: string; endTime: string }>)
-  );
+  const [timeEntries, setTimeEntries] = useState<Record<string, { startTime: string; endTime: string }>>({});
+  const [loading, setLoading] = useState(true);
 
   const [editIndividually, setEditIndividually] = useState(false);
-  const [groupTimes, setGroupTimes] = useState<{ startTime: string; endTime: string }>(() => {
-    const first = crewMembers[0];
-    return {
-      startTime: convertTo24Hour(first.scheduledStart),
-      endTime: convertTo24Hour(first.scheduledEnd),
-    };
+  const [groupTimes, setGroupTimes] = useState<{ startTime: string; endTime: string }>({
+    startTime: '09:00',
+    endTime: '17:00'
   });
+
+  // Load existing time entries or initialize with scheduled times
+  useEffect(() => {
+    const loadTimeEntries = async () => {
+      try {
+        // Check if there are existing time entries for this date
+        const { data: existingEntries, error } = await supabase
+          .from('time_entries')
+          .select('member_id, start_time, end_time')
+          .eq('date', selectedDate.toISOString().split('T')[0])
+          .eq('crew_id', '8685dabc-746e-4fe8-90a3-c41035c79dc0');
+
+        if (error) {
+          console.error('Error loading existing time entries:', error);
+        }
+
+        const entriesMap: Record<string, { startTime: string; endTime: string }> = {};
+        
+        // Initialize with existing entries or scheduled times
+        crewMembers.forEach(member => {
+          const existingEntry = existingEntries?.find(entry => entry.member_id === member.id);
+          
+          if (existingEntry) {
+            // Use existing time entry
+            entriesMap[member.id] = {
+              startTime: existingEntry.start_time,
+              endTime: existingEntry.end_time,
+            };
+          } else {
+            // Use scheduled times as default
+            entriesMap[member.id] = {
+              startTime: convertTo24Hour(member.scheduledStart),
+              endTime: convertTo24Hour(member.scheduledEnd),
+            };
+          }
+        });
+
+        setTimeEntries(entriesMap);
+        
+        // Set group times based on first member's times
+        const firstMemberEntry = entriesMap[crewMembers[0]?.id];
+        if (firstMemberEntry) {
+          setGroupTimes({
+            startTime: firstMemberEntry.startTime,
+            endTime: firstMemberEntry.endTime,
+          });
+        }
+      } catch (error) {
+        console.error('Error in loadTimeEntries:', error);
+        // Fallback to scheduled times
+        const fallbackEntries = crewMembers.reduce((acc, member) => {
+          acc[member.id] = {
+            startTime: convertTo24Hour(member.scheduledStart),
+            endTime: convertTo24Hour(member.scheduledEnd),
+          };
+          return acc;
+        }, {} as Record<string, { startTime: string; endTime: string }>);
+        setTimeEntries(fallbackEntries);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTimeEntries();
+  }, [selectedDate, crewMembers]);
 
   const updateTimeEntry = (crewId: string, field: 'startTime' | 'endTime', value: string) => {
     setTimeEntries(prev => ({
@@ -152,6 +207,16 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
     const entry = timeEntries[member.id];
     return entry && entry.startTime && entry.endTime && entry.startTime < entry.endTime;
   });
+
+  if (loading) {
+    return (
+      <Layout title="Edit Work Hours" onBack={onBack}>
+        <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+          <Typography>Loading existing time entries...</Typography>
+        </Box>
+      </Layout>
+    );
+  }
 
   return (
     <Layout title="Edit Work Hours" onBack={onBack}>
