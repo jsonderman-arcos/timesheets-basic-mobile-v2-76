@@ -204,10 +204,10 @@ export const ScheduleVerification = () => {
     return <TimeEntry onSubmit={handleTimeSubmit} onBack={() => setShowTimeEntry(false)} selectedDate={selectedDate} crewMembers={crewMembers} />;
   }
 
-  // Show completed hours view if time entries exist
+  // Show completed hours overview if time entries exist
   if (hasTimeEntries) {
     return (
-      <Layout title="Schedule Verification">
+      <Layout title="Time Tracking Overview">
         <Box sx={{ p: 2 }}>
           {/* Date Navigation */}
           <Box sx={{ 
@@ -246,7 +246,7 @@ export const ScheduleVerification = () => {
             </IconButton>
           </Box>
 
-          {/* Completed Hours Display */}
+          {/* Time Tracking Overview */}
           <Paper sx={{ 
             bgcolor: 'background.paper', 
             p: 3, 
@@ -255,17 +255,51 @@ export const ScheduleVerification = () => {
             borderColor: 'divider',
             mb: 3
           }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
               <CheckCircle sx={{ color: 'success.main' }} />
-              <Typography variant="h6" fontWeight="semibold" color="text.primary">
-                Hours Logged
+              <Typography variant="h5" fontWeight="semibold" color="text.primary">
+                Today's Time Tracking Complete
               </Typography>
             </Box>
             
+            {/* Summary Stats */}
+            <Box sx={{ display: 'flex', gap: 3, mb: 3 }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h4" fontWeight="bold" color="primary.main">
+                  {timeEntries.reduce((total, entry) => total + parseFloat(entry.hours_regular), 0).toFixed(1)}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Total Hours
+                </Typography>
+              </Box>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="h4" fontWeight="bold" color="primary.main">
+                  {timeEntries.length}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Crew Members
+                </Typography>
+              </Box>
+              {hoursBreakdown.length > 0 && (
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="h4" fontWeight="bold" color="primary.main">
+                    {['working', 'traveling', 'standby'].filter(type => 
+                      hoursBreakdown.some(b => b.breakdown_type === type)
+                    ).length}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Categories
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+            
+            <Divider sx={{ mb: 3 }} />
+            
             {/* Crew Members and Hours */}
             <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" fontWeight="medium" color="text.primary" gutterBottom>
-                Crew Members ({timeEntries.length})
+              <Typography variant="h6" fontWeight="medium" color="text.primary" gutterBottom>
+                Crew Members
               </Typography>
               {timeEntries.map((entry) => (
                 <Paper key={entry.id} sx={{ 
@@ -294,8 +328,7 @@ export const ScheduleVerification = () => {
             {/* Hours Breakdown */}
             {hoursBreakdown.length > 0 && (
               <Box>
-                <Divider sx={{ mb: 2 }} />
-                <Typography variant="subtitle1" fontWeight="medium" color="text.primary" gutterBottom>
+                <Typography variant="h6" fontWeight="medium" color="text.primary" gutterBottom>
                   Hours Breakdown
                 </Typography>
                 {['working', 'traveling', 'standby'].map(type => {
@@ -321,28 +354,35 @@ export const ScheduleVerification = () => {
             )}
           </Paper>
 
-          {/* Update Button */}
+          {/* Secondary Update Button */}
           <Button
             variant="outlined"
+            color="secondary"
             fullWidth
             startIcon={<Edit />}
             onClick={handleUpdateHours}
             sx={{ 
               py: 1.5,
               textTransform: 'none',
-              fontSize: '1rem'
+              fontSize: '0.95rem',
+              borderStyle: 'dashed',
+              '&:hover': {
+                borderStyle: 'solid'
+              }
             }}
           >
-            I need to update today's hours
+            Need to update today's hours?
           </Button>
         </Box>
       </Layout>
     );
   }
 
+  // Show initial time entry interface when no entries exist
   return (
     <Layout title="Schedule Verification">
-      <Box sx={{ p: 2, space: 3 }}>
+      <Box sx={{ p: 2 }}>
+        {/* Initial Entry Interface - Only shown when no entries exist */}
         {/* Date Navigation */}
         <Box sx={{ 
           display: 'flex', 
@@ -380,15 +420,15 @@ export const ScheduleVerification = () => {
           </IconButton>
         </Box>
 
-        <Box sx={{ space: 2 }}>
+        <Box sx={{ mb: 3 }}>
           <Typography 
-            variant="body1" 
+            variant="h6" 
             textAlign="center" 
             color="text.primary" 
             fontWeight="medium"
             sx={{ mb: 3 }}
           >
-            Did everyone work their scheduled hours on this day?
+            Did everyone work their scheduled hours today?
           </Typography>
           
           <Box sx={{ space: 1.5, mb: 3 }}>
