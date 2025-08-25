@@ -34,13 +34,14 @@ interface LayoutProps {
 const modalStyle = {
   position: 'absolute' as 'absolute',
   bottom: 0,
-  left: 0,
-  right: 0,
+  left: 'max(0px, env(safe-area-inset-left))',
+  right: 'max(0px, env(safe-area-inset-right))',
   bgcolor: 'background.paper',
   borderRadius: '16px 16px 0 0',
   boxShadow: 24,
   p: 3,
-  maxHeight: '70vh',
+  maxHeight: 'calc(70vh - env(safe-area-inset-bottom))',
+  marginBottom: 'env(safe-area-inset-bottom)',
   overflow: 'auto',
 };
 
@@ -56,11 +57,15 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
 
   return (
     <Box sx={{ 
-      height: '100vh', 
+      height: '100dvh', 
       display: 'flex', 
       flexDirection: 'column',
       bgcolor: 'background.default',
-      position: 'relative'
+      position: 'relative',
+      paddingTop: 'env(safe-area-inset-top)',
+      paddingLeft: 'env(safe-area-inset-left)',
+      paddingRight: 'env(safe-area-inset-right)',
+      paddingBottom: 'env(safe-area-inset-bottom)'
     }}>
       {/* Header */}
       <AppBar 
@@ -106,7 +111,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
         sx={{ 
           flex: 1, 
           overflow: 'auto',
-          pb: 10 // Space for FAB
+          pb: 'calc(80px + env(safe-area-inset-bottom))' // Space for FAB with safe area
         }}
       >
         {children}
@@ -117,8 +122,8 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
         color="primary"
         sx={{ 
           position: 'fixed', 
-          bottom: 24, 
-          right: 24,
+          bottom: 'calc(24px + env(safe-area-inset-bottom))', 
+          right: 'calc(24px + env(safe-area-inset-right))',
           zIndex: 1000
         }}
         onClick={() => setMenuOpen(true)}
