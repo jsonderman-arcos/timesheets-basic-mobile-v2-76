@@ -120,7 +120,12 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           position: 'absolute', 
           bottom: 'calc(24px + env(safe-area-inset-bottom))', 
           left: 'calc(24px + env(safe-area-inset-left))',
-          zIndex: 1000
+          zIndex: 1000,
+          backgroundColor: 'var(--core-lighthouse-colors-neutrals-neutral-700)',
+          '&:hover': {
+            backgroundColor: 'var(--core-lighthouse-colors-neutrals-neutral-700)',
+            opacity: 0.9
+          }
         }}
         onClick={() => setMenuOpen(true)}
       >
