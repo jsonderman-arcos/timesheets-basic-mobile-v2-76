@@ -481,7 +481,6 @@ export const ScheduleVerification = () => {
           <Box sx={{ space: 1.5, mb: 3 }}>
             <Button 
               variant="contained"
-              color="success"
               size="large"
               fullWidth
               startIcon={<CheckCircle />}
@@ -490,7 +489,12 @@ export const ScheduleVerification = () => {
                 mb: 1.5,
                 py: 1.5,
                 textTransform: 'none',
-                fontSize: '1rem'
+                fontSize: '1rem',
+                backgroundColor: 'primary.main',
+                '&:hover': {
+                  backgroundColor: 'primary.main',
+                  opacity: 0.9
+                }
               }}
             >
               Yes, everyone worked scheduled hours
