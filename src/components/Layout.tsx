@@ -18,7 +18,8 @@ import {
   Build,
   Person,
   Assignment,
-  Timer
+  Timer,
+  AttachMoney
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
@@ -39,7 +40,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
     { icon: <Timer />, text: "Time Tracking", action: () => navigate("/time-tracking") },
     { icon: <Assignment />, text: "Assess Damage", action: () => navigate("/assess") },
     { icon: <Build />, text: "Repairs", action: () => navigate("/repairs") },
-    { icon: <Settings />, text: "Expenses", action: () => navigate("/expenses") },
+    { icon: <AttachMoney />, text: "Expenses", action: () => navigate("/expenses") },
   ];
 
   return (
