@@ -17,7 +17,8 @@ import {
   LocalShipping,
   Build,
   Person,
-  Assignment
+  Assignment,
+  Timer
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
@@ -35,7 +36,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
   const menuItems = [
     { icon: <Home />, text: "Dashboard", action: () => navigate("/") },
     { icon: <LocalShipping />, text: "Convoys", action: () => navigate("/convoys") },
-    { icon: <Settings />, text: "Time Tracking", action: () => navigate("/time-tracking") },
+    { icon: <Timer />, text: "Time Tracking", action: () => navigate("/time-tracking") },
     { icon: <Assignment />, text: "Assess Damage", action: () => navigate("/assess") },
     { icon: <Build />, text: "Repairs", action: () => navigate("/repairs") },
     { icon: <Settings />, text: "Expenses", action: () => navigate("/expenses") },
