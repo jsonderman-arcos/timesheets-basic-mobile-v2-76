@@ -181,6 +181,57 @@ export type Database = {
           },
         ]
       }
+      hours_breakdown: {
+        Row: {
+          breakdown_type: string
+          created_at: string | null
+          description: string | null
+          end_time: string | null
+          hours: number
+          id: string
+          member_id: string | null
+          start_time: string | null
+          time_entry_id: string | null
+        }
+        Insert: {
+          breakdown_type: string
+          created_at?: string | null
+          description?: string | null
+          end_time?: string | null
+          hours?: number
+          id?: string
+          member_id?: string | null
+          start_time?: string | null
+          time_entry_id?: string | null
+        }
+        Update: {
+          breakdown_type?: string
+          created_at?: string | null
+          description?: string | null
+          end_time?: string | null
+          hours?: number
+          id?: string
+          member_id?: string | null
+          start_time?: string | null
+          time_entry_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hours_breakdown_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hours_breakdown_time_entry_id_fkey"
+            columns: ["time_entry_id"]
+            isOneToOne: false
+            referencedRelation: "time_entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storm_events: {
         Row: {
           active: boolean | null
