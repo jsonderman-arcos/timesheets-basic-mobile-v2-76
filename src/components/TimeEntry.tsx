@@ -95,7 +95,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
     // Validate all entries
     const allValid = crewMembers.every(member => {
       const entry = timeEntries[member.id];
-      return entry.startTime && entry.endTime && entry.startTime < entry.endTime;
+      return entry && entry.startTime && entry.endTime && entry.startTime < entry.endTime;
     });
 
     if (!allValid) {
@@ -107,6 +107,9 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
       // Prepare member hours data with real crew member IDs
       const memberHours = crewMembers.map(member => {
         const entry = timeEntries[member.id];
+        if (!entry) {
+          throw new Error(`No time entry found for member ${member.name}`);
+        }
         const hours = calculateHours(entry.startTime, entry.endTime);
         return {
           memberId: member.id,
