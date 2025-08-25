@@ -33,10 +33,20 @@ export const ScheduleVerification = () => {
   const [hasTimeEntries, setHasTimeEntries] = useState(false);
   const [timeEntries, setTimeEntries] = useState<any[]>([]);
   const [hoursBreakdown, setHoursBreakdown] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Start with loading true to prevent flash
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Immediately check for existing entries on component mount
+  useEffect(() => {
+    const initializeComponent = async () => {
+      setLoading(true);
+      await checkExistingTimeEntries();
+    };
+    initializeComponent();
+  }, []);
+
+  // Handle navigation state (success messages, refresh requests)
   useEffect(() => {
     const st = location.state as any;
     if (st?.showSuccess) {
@@ -45,30 +55,29 @@ export const ScheduleVerification = () => {
       // Clear the location state to prevent showing success on refresh
       window.history.replaceState({}, document.title);
       // Force refresh after a brief delay to ensure database consistency
-      setTimeout(() => {
-        checkExistingTimeEntries();
+      setTimeout(async () => {
+        await checkExistingTimeEntries();
       }, 1000);
     }
     if (st?.refreshData) {
       // Force refresh of time entries data with delay
-      setTimeout(() => {
-        checkExistingTimeEntries();
+      setTimeout(async () => {
+        await checkExistingTimeEntries();
       }, 500);
     }
   }, [location.state]);
 
-  // Check for existing time entries when date changes or component mounts
+  // Check for existing time entries when date changes
   useEffect(() => {
-    checkExistingTimeEntries();
+    const checkDateChange = async () => {
+      setLoading(true);
+      await checkExistingTimeEntries();
+    };
+    checkDateChange();
   }, [selectedDate]);
 
-  // Also check when component mounts
-  useEffect(() => {
-    checkExistingTimeEntries();
-  }, []);
-
   const checkExistingTimeEntries = async () => {
-    setLoading(true);
+    console.log('Checking existing time entries for date:', selectedDate.toISOString().split('T')[0]);
     try {
       const dateStr = selectedDate.toISOString().split('T')[0];
       
@@ -87,11 +96,13 @@ export const ScheduleVerification = () => {
         setHasTimeEntries(false);
         setTimeEntries([]);
         setHoursBreakdown([]);
-        setLoading(false);
         return;
       }
 
+      console.log('Found time entries:', entries?.length || 0);
+
       if (entries && entries.length > 0) {
+        console.log('Setting hasTimeEntries to true');
         setHasTimeEntries(true);
         setTimeEntries(entries);
 
@@ -105,6 +116,7 @@ export const ScheduleVerification = () => {
           setHoursBreakdown(breakdown);
         }
       } else {
+        console.log('No time entries found, setting hasTimeEntries to false');
         setHasTimeEntries(false);
         setTimeEntries([]);
         setHoursBreakdown([]);
@@ -112,8 +124,11 @@ export const ScheduleVerification = () => {
     } catch (error) {
       console.error('Error checking time entries:', error);
       setHasTimeEntries(false);
+      setTimeEntries([]);
+      setHoursBreakdown([]);
     } finally {
       setLoading(false);
+      console.log('Loading set to false, hasTimeEntries:', hasTimeEntries);
     }
   };
 
@@ -228,8 +243,10 @@ export const ScheduleVerification = () => {
     return <TimeEntry onSubmit={handleTimeSubmit} onBack={() => setShowTimeEntry(false)} selectedDate={selectedDate} crewMembers={crewMembers} />;
   }
 
+  console.log('Rendering with hasTimeEntries:', hasTimeEntries, 'showTimeEntry:', showTimeEntry);
+
   // Show completed hours overview if time entries exist
-  if (hasTimeEntries) {
+  if (hasTimeEntries && !showTimeEntry) {
     return (
       <Layout title="Time Tracking Overview">
         <Box sx={{ p: 2 }}>
@@ -408,6 +425,7 @@ export const ScheduleVerification = () => {
   }
 
   // Show initial time entry interface when no entries exist
+  console.log('Showing initial entry interface - no existing entries found');
   return (
     <Layout title="Schedule Verification">
       <Box sx={{ p: 2 }}>
