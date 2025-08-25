@@ -21,8 +21,13 @@ const AdditionalDetails = () => {
   // Get individual member hours and editing mode from location state
   const memberHours = location.state?.memberHours || [];
   const editedIndividually = location.state?.editedIndividually || false;
-  const totalHours = memberHours.reduce((total: number, member: any) => total + member.hours, 0);
-  console.log('Member hours received:', memberHours, 'Edited individually:', editedIndividually);
+  
+  // Calculate total hours based on editing mode
+  const totalHours = editedIndividually 
+    ? memberHours.reduce((total: number, member: any) => total + member.hours, 0) // Sum all individual hours
+    : (memberHours.length > 0 ? memberHours[0].hours : 8); // Use single crew hours per person
+  
+  console.log('Member hours received:', memberHours, 'Edited individually:', editedIndividually, 'Total hours:', totalHours);
   
   // State for individual member breakdowns (when edited individually)
   const [memberBreakdowns, setMemberBreakdowns] = useState<Record<string, {
