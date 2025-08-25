@@ -124,8 +124,8 @@ const AdditionalDetails = () => {
                 </Typography>
               </Box>
               
-              <Box sx={{ display: 'flex', gap: 2 }}>
-                <Box sx={{ flex: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Box>
                   <Typography variant="body2" color="text.primary" gutterBottom>
                     Working
                   </Typography>
@@ -149,7 +149,7 @@ const AdditionalDetails = () => {
                   />
                 </Box>
                 
-                <Box sx={{ flex: 1 }}>
+                <Box>
                   <Typography variant="body2" color="text.primary" gutterBottom>
                     Traveling
                   </Typography>
@@ -173,7 +173,7 @@ const AdditionalDetails = () => {
                   />
                 </Box>
                 
-                <Box sx={{ flex: 1 }}>
+                <Box>
                   <Typography variant="body2" color="text.primary" gutterBottom>
                     Standby
                   </Typography>
