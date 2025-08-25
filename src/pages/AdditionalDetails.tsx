@@ -203,7 +203,9 @@ const AdditionalDetails = () => {
       }
 
       toast.success("Details submitted successfully!");
-      navigate("/");
+      navigate("/", { 
+        state: { showSuccess: true, refreshData: true }
+      });
     } catch (error) {
       console.error('Error saving breakdown:', error);
       toast.error('Failed to save breakdown. Please try again.');

@@ -42,13 +42,30 @@ export const ScheduleVerification = () => {
     if (st?.showSuccess) {
       setIsCompleted(true);
       toast.success('Schedule updated successfully!');
+      // Clear the location state to prevent showing success on refresh
+      window.history.replaceState({}, document.title);
+      // Force refresh after a brief delay to ensure database consistency
+      setTimeout(() => {
+        checkExistingTimeEntries();
+      }, 1000);
+    }
+    if (st?.refreshData) {
+      // Force refresh of time entries data with delay
+      setTimeout(() => {
+        checkExistingTimeEntries();
+      }, 500);
     }
   }, [location.state]);
 
-  // Check for existing time entries when date changes
+  // Check for existing time entries when date changes or component mounts
   useEffect(() => {
     checkExistingTimeEntries();
   }, [selectedDate]);
+
+  // Also check when component mounts
+  useEffect(() => {
+    checkExistingTimeEntries();
+  }, []);
 
   const checkExistingTimeEntries = async () => {
     setLoading(true);
@@ -163,9 +180,16 @@ export const ScheduleVerification = () => {
   };
 
   const handleTimeSubmit = (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean) => {
-    // Refresh the data after time entry submission
-    checkExistingTimeEntries();
-    setShowTimeEntry(false);
+    navigate('/additional-details', { 
+      state: { memberHours, editedIndividually }
+    });
+  };
+
+  // Add a small delay to ensure database operations complete before checking
+  const refreshDataWithDelay = () => {
+    setTimeout(() => {
+      checkExistingTimeEntries();
+    }, 500);
   };
 
   if (isCompleted) {
