@@ -33,15 +33,16 @@ interface LayoutProps {
 
 const modalStyle = {
   position: 'absolute' as 'absolute',
-  bottom: 'env(safe-area-inset-bottom)',
-  left: 'env(safe-area-inset-left)',
-  right: 'env(safe-area-inset-right)',
+  bottom: 0,
+  left: 0,
+  right: 0,
   bgcolor: 'background.paper',
   borderRadius: '16px 16px 0 0',
   boxShadow: 24,
   p: 3,
-  maxHeight: 'calc(50vh - env(safe-area-inset-bottom))',
+  maxHeight: '50vh',
   overflow: 'auto',
+  zIndex: 1300,
 };
 
 export const Layout = ({ children, title, onBack }: LayoutProps) => {
@@ -140,6 +141,8 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
         closeAfterTransition
         BackdropComponent={Backdrop}
         BackdropProps={{ timeout: 500 }}
+        container={() => document.querySelector('[class*="w-[393px]"]') || document.body}
+        disablePortal={true}
       >
         <Slide direction="up" in={menuOpen} mountOnEnter unmountOnExit>
           <Box sx={modalStyle}>
