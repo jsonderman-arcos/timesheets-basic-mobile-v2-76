@@ -235,16 +235,12 @@ const handleConfirmSchedule = () => {
         <SheetTrigger asChild>
           <Button
             size="icon"
-            className="fixed bottom-4 left-4 h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg z-50"
+            className="absolute bottom-4 left-4 h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg z-50"
           >
             <Grid3X3 className="h-6 w-6" />
           </Button>
         </SheetTrigger>
         <SheetContent side="bottom" className="h-auto">
-          <SheetHeader>
-            <SheetTitle>Navigation</SheetTitle>
-            <SheetDescription>Select a section to navigate to</SheetDescription>
-          </SheetHeader>
           <div className="grid grid-cols-2 gap-4 mt-6">
             {menuItems.map((item) => (
               <Button
