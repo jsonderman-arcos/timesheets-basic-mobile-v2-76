@@ -23,7 +23,7 @@ interface CrewMember {
 }
 
 interface TimeEntryProps {
-  onSubmit: (memberHours: { memberId: string; hours: number }[]) => void;
+  onSubmit: (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean) => void;
   onBack: () => void;
   selectedDate: Date;
   crewMembers: CrewMember[];
@@ -196,7 +196,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
       }
 
       toast.success('Time entries saved successfully!');
-      onSubmit(memberHours.map(m => ({ memberId: m.memberId, hours: m.hours })));
+      onSubmit(memberHours.map(m => ({ memberId: m.memberId, hours: m.hours })), editIndividually);
     } catch (error) {
       console.error('Error saving time entries:', error);
       toast.error('Failed to save time entries. Please try again.');

@@ -78,7 +78,7 @@ export const ScheduleVerification = () => {
       hours: 8
     }));
     navigate('/additional-details', { 
-      state: { memberHours }
+      state: { memberHours, editedIndividually: false }
     });
   };
 
@@ -86,9 +86,9 @@ export const ScheduleVerification = () => {
     setShowTimeEntry(true);
   };
 
-  const handleTimeSubmit = (memberHours: { memberId: string; hours: number }[]) => {
+  const handleTimeSubmit = (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean) => {
     navigate('/additional-details', { 
-      state: { memberHours }
+      state: { memberHours, editedIndividually }
     });
   };
 
