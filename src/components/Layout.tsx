@@ -13,7 +13,9 @@ import {
   Home, 
   Add, 
   Settings, 
-  Close 
+  Close,
+  LocalShipping,
+  Build
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
@@ -30,10 +32,10 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
 
   const menuItems = [
     { icon: <Home />, text: "Dashboard", action: () => navigate("/") },
-    { icon: <Add />, text: "Convoys", action: () => navigate("/convoys") },
+    { icon: <LocalShipping />, text: "Convoys", action: () => navigate("/convoys") },
     { icon: <Settings />, text: "Time Tracking", action: () => navigate("/time-tracking") },
     { icon: <Home />, text: "Assess", action: () => navigate("/assess") },
-    { icon: <Add />, text: "Repairs", action: () => navigate("/repairs") },
+    { icon: <Build />, text: "Repairs", action: () => navigate("/repairs") },
     { icon: <Settings />, text: "Expenses", action: () => navigate("/expenses") },
   ];
 
@@ -140,8 +142,6 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
             borderRadius: '16px 16px 0 0',
             boxShadow: 24,
             p: 3,
-            maxHeight: '50vh',
-            overflow: 'auto',
             zIndex: 1300,
             transform: menuOpen ? 'translateY(0)' : 'translateY(100%)',
             transition: 'transform 0.3s ease-in-out',
