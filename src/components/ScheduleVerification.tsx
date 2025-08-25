@@ -249,8 +249,8 @@ const handleConfirmSchedule = () => {
           />
           
           {/* Menu Content */}
-          <div className="absolute bottom-0 left-0 right-0 bg-background rounded-t-xl border-0 z-50 p-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="absolute bottom-0 left-0 right-0 bg-background rounded-t-xl border-0 z-50 p-4 pb-16">
+            <div className="grid grid-cols-2 gap-4 mb-4">
               {menuItems.map((item) => (
                 <Button
                   key={item.name}
@@ -264,15 +264,16 @@ const handleConfirmSchedule = () => {
               ))}
             </div>
             
-            {/* Collapse Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute bottom-2 left-2"
-              onClick={() => setShowFabMenu(false)}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
+            {/* Collapse Button - 200% larger and in its own row */}
+            <div className="flex justify-start">
+              <Button
+                variant="ghost"
+                className="h-12 w-12 rounded-full"
+                onClick={() => setShowFabMenu(false)}
+              >
+                <ChevronLeft className="h-8 w-8" />
+              </Button>
+            </div>
           </div>
         </>
       )}
