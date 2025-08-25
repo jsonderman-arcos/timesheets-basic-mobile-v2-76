@@ -103,7 +103,7 @@ const handleConfirmSchedule = () => {
     <div className="h-full flex flex-col bg-background">
       {/* Fixed Header */}
       <div className="flex-shrink-0 bg-red-900 text-white">
-        <div className="text-center py-4">
+        <div className="text-center pt-8 pb-4">
           <h1 className="text-2xl font-bold">
             Schedule Verification
           </h1>
