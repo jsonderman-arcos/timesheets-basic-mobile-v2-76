@@ -13,6 +13,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { toast } from 'react-toastify';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdditionalDetails = () => {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const AdditionalDetails = () => {
   
   const handleBack = () => navigate("/");
   
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (editedIndividually) {
       // Validate that breakdowns don't exceed individual member hours
       const invalidMembers = memberHours.filter((member: any) => {
@@ -71,9 +72,142 @@ const AdditionalDetails = () => {
         return;
       }
     }
-    
-    toast.success("Details submitted successfully!");
-    navigate("/");
+
+    try {
+      // Prepare breakdown data for database insertion
+      const breakdownInserts: any[] = [];
+      const today = new Date().toISOString().split('T')[0];
+
+      if (editedIndividually) {
+        // Individual breakdowns - use each member's specific breakdown
+        for (const member of memberHours) {
+          const breakdown = memberBreakdowns[member.memberId] || { workingHours: '0', travelingHours: '0', standbyHours: '0' };
+          
+          // Get the time_entry_id for this member and date
+          const { data: timeEntry } = await supabase
+            .from('time_entries')
+            .select('id')
+            .eq('member_id', member.memberId)
+            .eq('date', today)
+            .eq('crew_id', '8685dabc-746e-4fe8-90a3-c41035c79dc0')
+            .single();
+
+          if (timeEntry) {
+            // Add breakdown records for this member
+            if (parseFloat(breakdown.workingHours || '0') > 0) {
+              breakdownInserts.push({
+                time_entry_id: timeEntry.id,
+                member_id: member.memberId,
+                breakdown_type: 'working',
+                hours: parseFloat(breakdown.workingHours),
+                description: notes || null
+              });
+            }
+            if (parseFloat(breakdown.travelingHours || '0') > 0) {
+              breakdownInserts.push({
+                time_entry_id: timeEntry.id,
+                member_id: member.memberId,
+                breakdown_type: 'traveling',
+                hours: parseFloat(breakdown.travelingHours),
+                description: notes || null
+              });
+            }
+            if (parseFloat(breakdown.standbyHours || '0') > 0) {
+              breakdownInserts.push({
+                time_entry_id: timeEntry.id,
+                member_id: member.memberId,
+                breakdown_type: 'standby',
+                hours: parseFloat(breakdown.standbyHours),
+                description: notes || null
+              });
+            }
+          }
+        }
+      } else {
+        // Group breakdown - apply the same breakdown to each member
+        for (const member of memberHours) {
+          // Get the time_entry_id for this member and date
+          const { data: timeEntry } = await supabase
+            .from('time_entries')
+            .select('id')
+            .eq('member_id', member.memberId)
+            .eq('date', today)
+            .eq('crew_id', '8685dabc-746e-4fe8-90a3-c41035c79dc0')
+            .single();
+
+          if (timeEntry) {
+            // Add the same breakdown for each member
+            if (parseFloat(totalWorkingHours || '0') > 0) {
+              breakdownInserts.push({
+                time_entry_id: timeEntry.id,
+                member_id: member.memberId,
+                breakdown_type: 'working',
+                hours: parseFloat(totalWorkingHours),
+                description: notes || null
+              });
+            }
+            if (parseFloat(totalTravelingHours || '0') > 0) {
+              breakdownInserts.push({
+                time_entry_id: timeEntry.id,
+                member_id: member.memberId,
+                breakdown_type: 'traveling',
+                hours: parseFloat(totalTravelingHours),
+                description: notes || null
+              });
+            }
+            if (parseFloat(totalStandbyHours || '0') > 0) {
+              breakdownInserts.push({
+                time_entry_id: timeEntry.id,
+                member_id: member.memberId,
+                breakdown_type: 'standby',
+                hours: parseFloat(totalStandbyHours),
+                description: notes || null
+              });
+            }
+          }
+        }
+      }
+
+      // Save breakdown data to database
+      if (breakdownInserts.length > 0) {
+        // First, delete any existing breakdowns for these time entries
+        const timeEntryIds = breakdownInserts.map(b => b.time_entry_id);
+        if (timeEntryIds.length > 0) {
+          await supabase
+            .from('hours_breakdown')
+            .delete()
+            .in('time_entry_id', timeEntryIds);
+        }
+
+        // Insert new breakdown data
+        const { error } = await supabase
+          .from('hours_breakdown')
+          .insert(breakdownInserts);
+
+        if (error) {
+          console.error('Error saving hours breakdown:', error);
+          toast.error('Failed to save hours breakdown. Please try again.');
+          return;
+        }
+      }
+
+      // Also update time_entries with notes if provided
+      if (notes.trim()) {
+        const memberIds = memberHours.map((m: any) => m.memberId);
+        await supabase
+          .from('time_entries')
+          .update({ comments: notes })
+          .in('member_id', memberIds)
+          .eq('date', today)
+          .eq('crew_id', '8685dabc-746e-4fe8-90a3-c41035c79dc0');
+      }
+
+      toast.success("Details submitted successfully!");
+      navigate("/");
+    } catch (error) {
+      console.error('Error saving breakdown:', error);
+      toast.error('Failed to save breakdown. Please try again.');
+    }
   };
 
   const updateMemberBreakdown = (memberId: string, field: 'workingHours' | 'travelingHours' | 'standbyHours', value: string) => {
