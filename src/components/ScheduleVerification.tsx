@@ -100,18 +100,19 @@ const handleConfirmSchedule = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-[var(--shadow-soft)] border-0 bg-[var(--gradient-card)]">
-        <CardHeader className="text-center pb-4">
+    <div className="h-full flex flex-col bg-background">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0 p-4 pt-8 bg-background">
+        <div className="text-center">
           <div className="w-16 h-16 bg-[var(--gradient-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
             <Clock className="w-8 h-8 text-primary-foreground" />
           </div>
-          <CardTitle className="text-2xl font-bold text-foreground">
+          <h1 className="text-2xl font-bold text-foreground mb-4">
             Schedule Verification
-          </CardTitle>
+          </h1>
           
           {/* Date Navigation */}
-          <div className="flex items-center justify-center gap-2 mt-4">
+          <div className="flex items-center justify-center gap-2">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -154,9 +155,12 @@ const handleConfirmSchedule = () => {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </CardHeader>
-        
-        <CardContent className="space-y-6">
+        </div>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <div className="space-y-6">
           <div className="space-y-4">
             <p className="text-center text-foreground font-medium">
               Did everyone work their scheduled hours on this day?
@@ -217,8 +221,8 @@ const handleConfirmSchedule = () => {
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
