@@ -33,15 +33,14 @@ interface LayoutProps {
 
 const modalStyle = {
   position: 'absolute' as 'absolute',
-  bottom: 0,
-  left: 'max(0px, env(safe-area-inset-left))',
-  right: 'max(0px, env(safe-area-inset-right))',
+  bottom: 'env(safe-area-inset-bottom)',
+  left: 'env(safe-area-inset-left)',
+  right: 'env(safe-area-inset-right)',
   bgcolor: 'background.paper',
   borderRadius: '16px 16px 0 0',
   boxShadow: 24,
   p: 3,
-  maxHeight: 'calc(70vh - env(safe-area-inset-bottom))',
-  marginBottom: 'env(safe-area-inset-bottom)',
+  maxHeight: 'calc(50vh - env(safe-area-inset-bottom))',
   overflow: 'auto',
 };
 
@@ -50,9 +49,12 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { icon: <Home />, text: "Home", action: () => navigate("/") },
-    { icon: <Add />, text: "Add Details", action: () => navigate("/additional-details") },
-    { icon: <Settings />, text: "Settings", action: () => {} },
+    { icon: <Home />, text: "Dashboard", action: () => navigate("/") },
+    { icon: <Add />, text: "Convoys", action: () => navigate("/convoys") },
+    { icon: <Settings />, text: "Time Tracking", action: () => navigate("/time-tracking") },
+    { icon: <Home />, text: "Assess", action: () => navigate("/assess") },
+    { icon: <Add />, text: "Repairs", action: () => navigate("/repairs") },
+    { icon: <Settings />, text: "Expenses", action: () => navigate("/expenses") },
   ];
 
   return (
@@ -142,40 +144,79 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
         <Slide direction="up" in={menuOpen} mountOnEnter unmountOnExit>
           <Box sx={modalStyle}>
             <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              mb: 2
+              position: 'relative',
+              pb: 6 // Space for close button
             }}>
-              <Typography variant="h6" component="h2">
-                Menu
-              </Typography>
-              <IconButton onClick={() => setMenuOpen(false)}>
-                <Close />
-              </IconButton>
-            </Box>
-            
-            <List>
-              {menuItems.map((item, index) => (
-                <ListItem key={index} disablePadding>
-                  <ListItemButton 
+              {/* Grid of menu items */}
+              <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gridTemplateRows: '1fr 1fr 1fr',
+                gap: 2,
+                mb: 2
+              }}>
+                {menuItems.map((item, index) => (
+                  <Box
+                    key={index}
+                    component="button"
                     onClick={() => {
                       item.action();
                       setMenuOpen(false);
                     }}
-                    sx={{ borderRadius: 1 }}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      p: 3,
+                      bgcolor: 'background.default',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        bgcolor: 'action.hover',
+                        transform: 'translateY(-2px)',
+                        boxShadow: 2
+                      }
+                    }}
                   >
-                    <ListItemIcon sx={{ color: 'primary.main' }}>
+                    <Box sx={{ color: 'primary.main', mb: 1 }}>
                       {item.icon}
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={item.text}
-                      sx={{ color: 'text.primary' }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </List>
+                    </Box>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'text.primary',
+                        textAlign: 'center',
+                        fontWeight: 500
+                      }}
+                    >
+                      {item.text}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+
+              {/* Close button in lower left */}
+              <IconButton 
+                onClick={() => setMenuOpen(false)}
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  bgcolor: 'background.default',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  '&:hover': {
+                    bgcolor: 'action.hover'
+                  }
+                }}
+              >
+                <Close />
+              </IconButton>
+            </Box>
           </Box>
         </Slide>
       </Modal>
