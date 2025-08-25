@@ -21,7 +21,7 @@ const AdditionalDetails = () => {
         <link rel="canonical" href="/additional-details" />
       </Helmet>
 
-      <div className="flex items-center justify-center min-h-full p-4">
+      <div className="flex items-start justify-center min-h-full p-4">
         <Card className="w-full max-w-md shadow-[var(--shadow-soft)] border-0 bg-[var(--gradient-card)]">
           <CardHeader>
             <h1 className="text-2xl font-bold text-foreground">Additional Details</h1>
