@@ -71,7 +71,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
             <IconButton 
               edge="start" 
               onClick={onBack}
-              className="text-contrast-text"
+              className="text-white"
               sx={{ mr: 1 }}
             >
               <ArrowBack />
@@ -91,7 +91,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           <IconButton 
             edge="end" 
             onClick={() => navigate("/account")}
-            className="text-contrast-text"
+            className="text-white"
           >
             <Person />
           </IconButton>
