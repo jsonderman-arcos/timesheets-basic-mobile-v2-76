@@ -1,14 +1,38 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdditionalDetails from "./pages/AdditionalDetails";
 
 const queryClient = new QueryClient();
+
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#3b82f6',
+    },
+    secondary: {
+      main: '#f59e0b',
+    },
+    background: {
+      default: '#0f172a',
+      paper: '#1e293b',
+    },
+    text: {
+      primary: '#f8fafc',
+      secondary: '#cbd5e1',
+    },
+  },
+  shape: {
+    borderRadius: 12,
+  },
+});
 
 const App = () => (
   <div className="flex items-center justify-center min-h-screen bg-black">
@@ -17,11 +41,11 @@ const App = () => (
       <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-50"></div>
       
       {/* App content with proper scrolling */}
-      <QueryClientProvider client={queryClient}>
-        <HelmetProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <QueryClientProvider client={queryClient}>
+          <HelmetProvider>
+            <ToastContainer position="top-right" theme="dark" />
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
@@ -30,9 +54,9 @@ const App = () => (
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
-          </TooltipProvider>
-        </HelmetProvider>
-      </QueryClientProvider>
+          </HelmetProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     </div>
   </div>
 );

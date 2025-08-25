@@ -1,6 +1,29 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Grid3X3, LayoutDashboard, Truck, Wrench, ClipboardCheck, Clock, DollarSign, ChevronLeft } from 'lucide-react';
+import React, { useState } from "react";
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  IconButton, 
+  Fab, 
+  Modal, 
+  Box, 
+  List, 
+  ListItem, 
+  ListItemButton, 
+  ListItemIcon, 
+  ListItemText,
+  Slide,
+  Backdrop
+} from "@mui/material";
+import { 
+  ArrowBack, 
+  Menu as MenuIcon, 
+  Home, 
+  Add, 
+  Settings, 
+  Close 
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -8,91 +31,145 @@ interface LayoutProps {
   onBack?: () => void;
 }
 
+const modalStyle = {
+  position: 'absolute' as 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  bgcolor: 'background.paper',
+  borderRadius: '16px 16px 0 0',
+  boxShadow: 24,
+  p: 3,
+  maxHeight: '70vh',
+  overflow: 'auto',
+};
+
 export const Layout = ({ children, title, onBack }: LayoutProps) => {
-  const [showFabMenu, setShowFabMenu] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const menuItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, active: false },
-    { name: 'Convoys', icon: Truck, active: false },
-    { name: 'Repair', icon: Wrench, active: false },
-    { name: 'Assess', icon: ClipboardCheck, active: false },
-    { name: 'Time Tracking', icon: Clock, active: true },
-    { name: 'Expenses', icon: DollarSign, active: false },
+    { icon: <Home />, text: "Home", action: () => navigate("/") },
+    { icon: <Add />, text: "Add Details", action: () => navigate("/additional-details") },
+    { icon: <Settings />, text: "Settings", action: () => {} },
   ];
 
   return (
-    <div className="h-full flex flex-col bg-background">
-      {/* Fixed Header */}
-      <div className="flex-shrink-0 bg-red-900 text-white">
-        <div className="text-center pt-8 pb-4 relative">
-          {onBack && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:bg-white/20"
-              onClick={onBack}
-            >
-              <ChevronLeft className="h-12 w-12" />
-            </Button>
-          )}
-          <h1 className="text-2xl font-bold">
-            {title}
-          </h1>
-        </div>
-      </div>
-
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4">
-        {children}
-      </div>
-
-      {/* FAB Menu */}
-      <Button
-        size="icon"
-        className="absolute bottom-4 left-4 h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg z-50"
-        onClick={() => setShowFabMenu(!showFabMenu)}
+    <Box sx={{ 
+      height: '100vh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      bgcolor: 'background.default',
+      position: 'relative'
+    }}>
+      {/* Header */}
+      <AppBar 
+        position="static" 
+        elevation={0}
+        sx={{ 
+          bgcolor: 'background.paper',
+          borderBottom: '1px solid',
+          borderColor: 'divider'
+        }}
       >
-        <Grid3X3 className="h-6 w-6" />
-      </Button>
+        <Toolbar sx={{ minHeight: '64px !important', px: 2 }}>
+          {onBack && (
+            <IconButton 
+              edge="start" 
+              onClick={onBack}
+              sx={{ mr: 1, color: 'text.primary' }}
+            >
+              <ArrowBack />
+            </IconButton>
+          )}
+          <Typography 
+            variant="h6" 
+            component="h1" 
+            sx={{ 
+              flexGrow: 1, 
+              color: 'text.primary',
+              fontWeight: 600
+            }}
+          >
+            {title}
+          </Typography>
+        </Toolbar>
+      </AppBar>
 
-      {/* Custom Menu Modal - stays within iPhone wrapper */}
-      {showFabMenu && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/50 z-40"
-            onClick={() => setShowFabMenu(false)}
-          />
-          
-          {/* Menu Content */}
-          <div className="absolute bottom-0 left-0 right-0 bg-background rounded-t-xl border-0 z-50 p-4">
-            <div className="grid grid-cols-2 gap-4">
-              {menuItems.map((item) => (
-                <Button
-                  key={item.name}
-                  variant={item.active ? "default" : "outline"}
-                  className="h-16 flex flex-col gap-2"
-                  onClick={() => setShowFabMenu(false)}
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span className="text-xs">{item.name}</span>
-                </Button>
-              ))}
-            </div>
+      {/* Main Content */}
+      <Box 
+        component="main"
+        sx={{ 
+          flex: 1, 
+          overflow: 'auto',
+          pb: 10 // Space for FAB
+        }}
+      >
+        {children}
+      </Box>
+
+      {/* Floating Action Button */}
+      <Fab
+        color="primary"
+        sx={{ 
+          position: 'fixed', 
+          bottom: 24, 
+          right: 24,
+          zIndex: 1000
+        }}
+        onClick={() => setMenuOpen(true)}
+      >
+        <MenuIcon />
+      </Fab>
+
+      {/* Bottom Sheet Menu */}
+      <Modal
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        closeAfterTransition
+        BackdropComponent={Backdrop}
+        BackdropProps={{ timeout: 500 }}
+      >
+        <Slide direction="up" in={menuOpen} mountOnEnter unmountOnExit>
+          <Box sx={modalStyle}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              mb: 2
+            }}>
+              <Typography variant="h6" component="h2">
+                Menu
+              </Typography>
+              <IconButton onClick={() => setMenuOpen(false)}>
+                <Close />
+              </IconButton>
+            </Box>
             
-            {/* Collapse Button Row - 48px high */}
-            <div className="h-12 flex items-center justify-start">
-              <Button
-                variant="ghost"
-                className="h-12 w-12 rounded-full"
-                onClick={() => setShowFabMenu(false)}
-              >
-                <ChevronLeft className="h-8 w-8" />
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+            <List>
+              {menuItems.map((item, index) => (
+                <ListItem key={index} disablePadding>
+                  <ListItemButton 
+                    onClick={() => {
+                      item.action();
+                      setMenuOpen(false);
+                    }}
+                    sx={{ borderRadius: 1 }}
+                  >
+                    <ListItemIcon sx={{ color: 'primary.main' }}>
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={item.text}
+                      sx={{ color: 'text.primary' }}
+                    />
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </Slide>
+      </Modal>
+    </Box>
   );
 };
