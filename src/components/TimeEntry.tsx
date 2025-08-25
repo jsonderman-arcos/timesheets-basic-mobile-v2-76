@@ -22,7 +22,7 @@ interface CrewMember {
 }
 
 interface TimeEntryProps {
-  onSubmit: () => void;
+  onSubmit: (totalHours: number) => void;
   onBack: () => void;
   selectedDate: Date;
   crewMembers: CrewMember[];
@@ -90,6 +90,20 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
     return Math.max(0, (endMinutes - startMinutes) / 60);
   };
 
+  const getTotalWorkedHours = () => {
+    if (editIndividually) {
+      // For individual editing, calculate total for all crew members
+      return crewMembers.reduce((total, member) => {
+        const entry = timeEntries[member.id];
+        return total + calculateHours(entry?.startTime || '', entry?.endTime || '');
+      }, 0);
+    } else {
+      // For group editing, multiply hours by crew size
+      const hoursPerPerson = calculateHours(groupTimes.startTime, groupTimes.endTime);
+      return hoursPerPerson * crewMembers.length;
+    }
+  };
+
   const handleSubmit = () => {
     // Validate all entries
     const allValid = crewMembers.every(member => {
@@ -98,8 +112,9 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
     });
 
     if (allValid) {
+      const totalHours = getTotalWorkedHours();
       toast.success('Time entries saved successfully!');
-      onSubmit();
+      onSubmit(totalHours);
     } else {
       toast.error('Please ensure all times are valid and end time is after start time.');
     }
@@ -204,7 +219,29 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
               </Card>
             ))}
           </Box>
-        )}
+         )}
+
+         {/* Total Hours Summary */}
+         <Card sx={{ mb: 2, bgcolor: 'background.default' }}>
+           <CardContent sx={{ py: 2 }}>
+             <Typography variant="h6" color="text.primary" gutterBottom>
+               Total Hours Summary
+             </Typography>
+             <Typography variant="body1" color="text.secondary">
+               Total logged hours for all crew members: <strong>{getTotalWorkedHours().toFixed(1)} hours</strong>
+             </Typography>
+             {editIndividually && (
+               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                 ({crewMembers.length} crew members × individual hours)
+               </Typography>
+             )}
+             {!editIndividually && (
+               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                 ({crewMembers.length} crew members × {calculateHours(groupTimes.startTime, groupTimes.endTime).toFixed(1)} hours each)
+               </Typography>
+             )}
+           </CardContent>
+         </Card>
 
         <Button
           variant="contained"

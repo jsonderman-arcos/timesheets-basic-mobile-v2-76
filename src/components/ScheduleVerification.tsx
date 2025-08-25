@@ -74,15 +74,21 @@ export const ScheduleVerification = () => {
   };
 
   const handleConfirmSchedule = () => {
-    navigate('/additional-details');
+    // Calculate scheduled hours for all crew members
+    const scheduledHours = crewMembers.length * 8; // 8 hours per person
+    navigate('/additional-details', { 
+      state: { totalHours: scheduledHours }
+    });
   };
 
   const handleDenySchedule = () => {
     setShowTimeEntry(true);
   };
 
-  const handleTimeSubmit = () => {
-    navigate('/additional-details');
+  const handleTimeSubmit = (totalHours: number) => {
+    navigate('/additional-details', { 
+      state: { totalHours }
+    });
   };
 
   if (isCompleted) {
