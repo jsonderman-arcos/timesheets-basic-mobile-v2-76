@@ -14,7 +14,7 @@ const AdditionalDetails = () => {
     navigate("/", { state: { showSuccess: true } });
   };
   return (
-    <Layout title="Additional Details">
+    <Layout title="Additional Details" onBack={handleBack}>
       <Helmet>
         <title>Additional Details | Notes</title>
         <meta name="description" content="Add notes and additional details for the crew's schedule verification." />
@@ -94,9 +94,6 @@ const AdditionalDetails = () => {
           <CardFooter className="flex flex-col gap-3 w-full">
             <Button onClick={handleSubmit} aria-label="Submit notes" className="w-full">
               Submit
-            </Button>
-            <Button variant="outline" onClick={handleBack} aria-label="Go back to previous screen" className="w-full">
-              Back
             </Button>
           </CardFooter>
         </Card>

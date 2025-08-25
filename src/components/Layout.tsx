@@ -5,9 +5,10 @@ import { Grid3X3, LayoutDashboard, Truck, Wrench, ClipboardCheck, Clock, DollarS
 interface LayoutProps {
   children: React.ReactNode;
   title: string;
+  onBack?: () => void;
 }
 
-export const Layout = ({ children, title }: LayoutProps) => {
+export const Layout = ({ children, title, onBack }: LayoutProps) => {
   const [showFabMenu, setShowFabMenu] = useState(false);
 
   const menuItems = [
@@ -23,7 +24,17 @@ export const Layout = ({ children, title }: LayoutProps) => {
     <div className="h-full flex flex-col bg-background">
       {/* Fixed Header */}
       <div className="flex-shrink-0 bg-red-900 text-white">
-        <div className="text-center pt-8 pb-4">
+        <div className="text-center pt-8 pb-4 relative">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:bg-white/20"
+              onClick={onBack}
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+          )}
           <h1 className="text-2xl font-bold">
             {title}
           </h1>

@@ -118,7 +118,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
   });
 
   return (
-    <Layout title="Edit Crew Hours">
+    <Layout title="Edit Crew Hours" onBack={onBack}>
       <div className="space-y-6">
         <Card className="w-full shadow-[var(--shadow-soft)] border-0 bg-[var(--gradient-card)]">
           <CardHeader className="text-center pb-4">
@@ -260,17 +260,6 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                 >
                   <Save className="w-5 h-5 mr-2" />
                   Save Hours
-                </Button>
-                
-                <Button 
-                  type="button"
-                  variant="outline" 
-                  size="lg" 
-                  className="w-full"
-                  onClick={onBack}
-                >
-                  <ArrowLeft className="w-5 h-5 mr-2" />
-                  Back to Verification
                 </Button>
               </div>
             </form>
