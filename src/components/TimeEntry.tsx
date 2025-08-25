@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Clock, Save } from 'lucide-react';
+import { Layout } from './Layout';
 
 interface CrewMember {
   id: string;
@@ -117,169 +118,168 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
   });
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-[var(--shadow-soft)] border-0 bg-[var(--gradient-card)]">
-        <CardHeader className="text-center pb-4">
-          <div className="w-16 h-16 bg-[var(--gradient-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
-            <Clock className="w-8 h-8 text-primary-foreground" />
-          </div>
-          <CardTitle className="text-2xl font-bold text-foreground">
-            Edit Crew Hours
-          </CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Update the actual times worked on {selectedDate.toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4 max-h-96 overflow-y-auto">
-              <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                <Label htmlFor="edit-individually" className="text-foreground font-medium">Edit Individually</Label>
-                <Switch
-                  id="edit-individually"
-                  checked={editIndividually}
-                  onCheckedChange={setEditIndividually}
-                />
-              </div>
-
-              {!editIndividually && (
-                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                  <h4 className="font-semibold text-foreground">All Crew Members</h4>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="group-start" className="text-foreground font-medium text-sm">
-                        Start Time
-                      </Label>
-                      <Input
-                        id="group-start"
-                        type="time"
-                        value={groupTimes.startTime}
-                        onChange={(e) => updateAllEntries('startTime', e.target.value)}
-                        className="text-sm"
-                        required
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="group-end" className="text-foreground font-medium text-sm">
-                        End Time
-                      </Label>
-                      <Input
-                        id="group-end"
-                        type="time"
-                        value={groupTimes.endTime}
-                        onChange={(e) => updateAllEntries('endTime', e.target.value)}
-                        className="text-sm"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {calculateHours(groupTimes.startTime, groupTimes.endTime) && (
-                    <div className="bg-background/50 rounded-md p-2 text-center">
-                      <span className="text-muted-foreground text-sm">Total Hours: </span>
-                      <span className="font-semibold text-foreground text-sm">{calculateHours(groupTimes.startTime, groupTimes.endTime)}</span>
-                    </div>
-                  )}
+    <Layout title="Edit Crew Hours">
+      <div className="space-y-6">
+        <Card className="w-full shadow-[var(--shadow-soft)] border-0 bg-[var(--gradient-card)]">
+          <CardHeader className="text-center pb-4">
+            <div className="w-16 h-16 bg-[var(--gradient-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-8 h-8 text-primary-foreground" />
+            </div>
+            <h2 className="text-xl font-semibold text-foreground">
+              Update the actual times worked on {selectedDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </h2>
+          </CardHeader>
+          
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                  <Label htmlFor="edit-individually" className="text-foreground font-medium">Edit Individually</Label>
+                  <Switch
+                    id="edit-individually"
+                    checked={editIndividually}
+                    onCheckedChange={setEditIndividually}
+                  />
                 </div>
-              )}
 
-              {editIndividually && crewMembers.map((member) => {
-                const entry = timeEntries[member.id];
-                const hours = calculateHours(entry.startTime, entry.endTime);
-                
-                return (
-                  <div key={member.id} className="bg-muted/50 rounded-lg p-4 space-y-3">
-                    <h4 className="font-semibold text-foreground">{member.name}</h4>
-                    
+                {!editIndividually && (
+                  <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                    <h4 className="font-semibold text-foreground">All Crew Members</h4>
+
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label htmlFor={`start-${member.id}`} className="text-foreground font-medium text-sm">
+                        <Label htmlFor="group-start" className="text-foreground font-medium text-sm">
                           Start Time
                         </Label>
                         <Input
-                          id={`start-${member.id}`}
+                          id="group-start"
                           type="time"
-                          value={entry.startTime}
-                          onChange={(e) => updateTimeEntry(member.id, 'startTime', e.target.value)}
+                          value={groupTimes.startTime}
+                          onChange={(e) => updateAllEntries('startTime', e.target.value)}
                           className="text-sm"
                           required
-                          disabled={!editIndividually}
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
-                        <Label htmlFor={`end-${member.id}`} className="text-foreground font-medium text-sm">
+                        <Label htmlFor="group-end" className="text-foreground font-medium text-sm">
                           End Time
                         </Label>
                         <Input
-                          id={`end-${member.id}`}
+                          id="group-end"
                           type="time"
-                          value={entry.endTime}
-                          onChange={(e) => updateTimeEntry(member.id, 'endTime', e.target.value)}
+                          value={groupTimes.endTime}
+                          onChange={(e) => updateAllEntries('endTime', e.target.value)}
                           className="text-sm"
                           required
-                          disabled={!editIndividually}
                         />
                       </div>
                     </div>
-                    
-                    {hours && (
+
+                    {calculateHours(groupTimes.startTime, groupTimes.endTime) && (
                       <div className="bg-background/50 rounded-md p-2 text-center">
                         <span className="text-muted-foreground text-sm">Total Hours: </span>
-                        <span className="font-semibold text-foreground text-sm">{hours}</span>
+                        <span className="font-semibold text-foreground text-sm">{calculateHours(groupTimes.startTime, groupTimes.endTime)}</span>
                       </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
+                )}
 
-            {!editIndividually && (
-              <div>
-                <h4 className="font-medium text-foreground mb-2">Crew Members</h4>
-                <div className="grid grid-cols-2 gap-2">
-                  {crewMembers.map((member) => (
-                    <div key={member.id} className="bg-background/50 rounded-md px-3 py-2">
-                      <span className="text-foreground text-sm">{member.name}</span>
+                {editIndividually && crewMembers.map((member) => {
+                  const entry = timeEntries[member.id];
+                  const hours = calculateHours(entry.startTime, entry.endTime);
+                  
+                  return (
+                    <div key={member.id} className="bg-muted/50 rounded-lg p-4 space-y-3">
+                      <h4 className="font-semibold text-foreground">{member.name}</h4>
+                      
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label htmlFor={`start-${member.id}`} className="text-foreground font-medium text-sm">
+                            Start Time
+                          </Label>
+                          <Input
+                            id={`start-${member.id}`}
+                            type="time"
+                            value={entry.startTime}
+                            onChange={(e) => updateTimeEntry(member.id, 'startTime', e.target.value)}
+                            className="text-sm"
+                            required
+                            disabled={!editIndividually}
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor={`end-${member.id}`} className="text-foreground font-medium text-sm">
+                            End Time
+                          </Label>
+                          <Input
+                            id={`end-${member.id}`}
+                            type="time"
+                            value={entry.endTime}
+                            onChange={(e) => updateTimeEntry(member.id, 'endTime', e.target.value)}
+                            className="text-sm"
+                            required
+                            disabled={!editIndividually}
+                          />
+                        </div>
+                      </div>
+                      
+                      {hours && (
+                        <div className="bg-background/50 rounded-md p-2 text-center">
+                          <span className="text-muted-foreground text-sm">Total Hours: </span>
+                          <span className="font-semibold text-foreground text-sm">{hours}</span>
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
-            )}
 
-            <div className="space-y-3">
-              <Button 
-                type="submit" 
-                variant="default" 
-                size="lg" 
-                className="w-full"
-                disabled={!isValid}
-              >
-                <Save className="w-5 h-5 mr-2" />
-                Save Hours
-              </Button>
-              
-              <Button 
-                type="button"
-                variant="outline" 
-                size="lg" 
-                className="w-full"
-                onClick={onBack}
-              >
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                Back to Verification
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+              {!editIndividually && (
+                <div>
+                  <h4 className="font-medium text-foreground mb-2">Crew Members</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {crewMembers.map((member) => (
+                      <div key={member.id} className="bg-background/50 rounded-md px-3 py-2">
+                        <span className="text-foreground text-sm">{member.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <Button 
+                  type="submit" 
+                  variant="default" 
+                  size="lg" 
+                  className="w-full"
+                  disabled={!isValid}
+                >
+                  <Save className="w-5 h-5 mr-2" />
+                  Save Hours
+                </Button>
+                
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  size="lg" 
+                  className="w-full"
+                  onClick={onBack}
+                >
+                  <ArrowLeft className="w-5 h-5 mr-2" />
+                  Back to Verification
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </Layout>
   );
 };
