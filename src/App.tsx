@@ -10,10 +10,10 @@ import NotFound from "./pages/NotFound";
 import AdditionalDetails from "./pages/AdditionalDetails";
 import Account from "./pages/Account";
 import Convoys from "./pages/Convoys";
-import TimeTracking from "./pages/TimeTracking";
 import Assess from "./pages/Assess";
 import Repairs from "./pages/Repairs";
 import Expenses from "./pages/Expenses";
+import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
@@ -56,7 +56,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/convoys" element={<Convoys />} />
-                <Route path="/time-tracking" element={<TimeTracking />} />
+                <Route path="/time-tracking" element={<Navigate to="/" replace />} />
                 <Route path="/assess" element={<Assess />} />
                 <Route path="/repairs" element={<Repairs />} />
                 <Route path="/expenses" element={<Expenses />} />
