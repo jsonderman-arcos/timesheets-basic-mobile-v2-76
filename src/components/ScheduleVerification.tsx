@@ -102,12 +102,9 @@ const handleConfirmSchedule = () => {
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Fixed Header */}
-      <div className="flex-shrink-0 p-4 pt-8 bg-background">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-[var(--gradient-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
-            <Clock className="w-8 h-8 text-primary-foreground" />
-          </div>
-          <h1 className="text-2xl font-bold text-foreground">
+      <div className="flex-shrink-0 bg-red-900 text-white">
+        <div className="text-center py-4">
+          <h1 className="text-2xl font-bold">
             Schedule Verification
           </h1>
         </div>
