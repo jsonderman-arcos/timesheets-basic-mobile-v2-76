@@ -84,9 +84,6 @@ const handleConfirmSchedule = () => {
         <div className="flex items-center justify-center min-h-full p-4">
           <Card className="w-full max-w-md shadow-[var(--shadow-soft)] border-0 bg-[var(--gradient-card)]">
             <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-success rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-success-foreground" />
-              </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">All Set!</h2>
               <p className="text-muted-foreground">
                 Your work hours have been recorded. Thank you for updating your schedule.

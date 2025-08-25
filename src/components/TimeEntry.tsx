@@ -122,9 +122,6 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
       <div className="space-y-6">
         <Card className="w-full shadow-[var(--shadow-soft)] border-0 bg-[var(--gradient-card)]">
           <CardHeader className="text-center pb-4">
-            <div className="w-16 h-16 bg-[var(--gradient-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-8 h-8 text-primary-foreground" />
-            </div>
             <h2 className="text-xl font-semibold text-foreground">
               Update the actual times worked on {selectedDate.toLocaleDateString('en-US', { 
                 weekday: 'long', 
