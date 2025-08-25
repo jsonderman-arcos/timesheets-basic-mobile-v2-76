@@ -13,6 +13,7 @@ import { Layout } from "@/components/Layout";
 import { toast } from 'react-toastify';
 
 const AdditionalDetails = () => {
+  // Force cache refresh
   const navigate = useNavigate();
   
   const handleBack = () => navigate("/");
