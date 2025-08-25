@@ -16,7 +16,8 @@ import {
   Close,
   LocalShipping,
   Build,
-  Person
+  Person,
+  Assignment
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
@@ -35,7 +36,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
     { icon: <Home />, text: "Dashboard", action: () => navigate("/") },
     { icon: <LocalShipping />, text: "Convoys", action: () => navigate("/convoys") },
     { icon: <Settings />, text: "Time Tracking", action: () => navigate("/time-tracking") },
-    { icon: <Home />, text: "Assess", action: () => navigate("/assess") },
+    { icon: <Assignment />, text: "Assess Damage", action: () => navigate("/assess") },
     { icon: <Build />, text: "Repairs", action: () => navigate("/repairs") },
     { icon: <Settings />, text: "Expenses", action: () => navigate("/expenses") },
   ];
