@@ -1,86 +1,236 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Grid3X3, LayoutDashboard, Truck, Wrench, ClipboardCheck, Clock, DollarSign, ChevronLeft } from 'lucide-react';
+import React, { useState } from "react";
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  IconButton, 
+  Fab, 
+  Box
+} from "@mui/material";
+import { 
+  ArrowBack, 
+  Menu as MenuIcon, 
+  Home, 
+  Add, 
+  Settings, 
+  Close,
+  LocalShipping,
+  Build,
+  Person
+} from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+
 interface LayoutProps {
   children: React.ReactNode;
   title: string;
   onBack?: () => void;
 }
-export const Layout = ({
-  children,
-  title,
-  onBack
-}: LayoutProps) => {
-  const [showFabMenu, setShowFabMenu] = useState(false);
-  const menuItems = [{
-    name: 'Dashboard',
-    icon: LayoutDashboard,
-    active: false
-  }, {
-    name: 'Convoys',
-    icon: Truck,
-    active: false
-  }, {
-    name: 'Repair',
-    icon: Wrench,
-    active: false
-  }, {
-    name: 'Assess',
-    icon: ClipboardCheck,
-    active: false
-  }, {
-    name: 'Time Tracking',
-    icon: Clock,
-    active: true
-  }, {
-    name: 'Expenses',
-    icon: DollarSign,
-    active: false
-  }];
-  return <div className="h-full flex flex-col bg-background">
-      {/* Fixed Header */}
-      <div className="flex-shrink-0 bg-red-900 text-white">
-        <div className="text-center pt-8 pb-4 relative">
-          {onBack && <Button variant="ghost" size="icon" className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:bg-white/20" onClick={onBack}>
-              <ChevronLeft className="h-12 w-12" />
-            </Button>}
-          <h1 className="text-2xl font-bold">
+
+
+export const Layout = ({ children, title, onBack }: LayoutProps) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const menuItems = [
+    { icon: <Home />, text: "Dashboard", action: () => navigate("/") },
+    { icon: <LocalShipping />, text: "Convoys", action: () => navigate("/convoys") },
+    { icon: <Settings />, text: "Time Tracking", action: () => navigate("/time-tracking") },
+    { icon: <Home />, text: "Assess", action: () => navigate("/assess") },
+    { icon: <Build />, text: "Repairs", action: () => navigate("/repairs") },
+    { icon: <Settings />, text: "Expenses", action: () => navigate("/expenses") },
+  ];
+
+  return (
+    <Box sx={{ 
+      height: '100dvh', 
+      display: 'flex', 
+      flexDirection: 'column',
+      bgcolor: 'background.default',
+      position: 'relative',
+      paddingTop: 'env(safe-area-inset-top)',
+      paddingLeft: 'env(safe-area-inset-left)',
+      paddingRight: 'env(safe-area-inset-right)',
+      paddingBottom: 'env(safe-area-inset-bottom)'
+    }}>
+      {/* Header */}
+      <AppBar 
+        position="static" 
+        elevation={0}
+        sx={{ 
+          bgcolor: 'background.paper',
+          borderBottom: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
+        <Toolbar sx={{ 
+          minHeight: '64px !important', 
+          px: 2,
+          bgcolor: 'var(--theme-base-background-brand-dark-tone)'
+        }}>
+          {onBack && (
+            <IconButton 
+              edge="start" 
+              onClick={onBack}
+              sx={{ mr: 1, color: 'text.primary' }}
+            >
+              <ArrowBack />
+            </IconButton>
+          )}
+          <Typography 
+            variant="h6" 
+            component="h1" 
+            className="text-contraxt"
+            sx={{ 
+              flexGrow: 1, 
+              fontWeight: 600
+            }}
+          >
             {title}
-          </h1>
-        </div>
-      </div>
+          </Typography>
+          <IconButton 
+            edge="end" 
+            onClick={() => navigate("/account")}
+            sx={{ color: 'text.primary' }}
+          >
+            <Person />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4">
+      {/* Main Content */}
+      <Box 
+        component="main"
+        sx={{ 
+          flex: 1, 
+          overflow: 'auto',
+          pb: 'calc(80px + env(safe-area-inset-bottom))' // Space for FAB with safe area
+        }}
+      >
         {children}
-      </div>
+      </Box>
 
-      {/* FAB Menu */}
-      <Button size="icon" className="absolute bottom-4 left-4 h-14 w-14 rounded-full bg-primary hover:bg-primary/90 shadow-lg z-50" onClick={() => setShowFabMenu(!showFabMenu)}>
-        <Grid3X3 className="h-6 w-6" />
-      </Button>
+      {/* Floating Action Button */}
+      <Fab
+        color="primary"
+        sx={{ 
+          position: 'absolute', 
+          bottom: 'calc(24px + env(safe-area-inset-bottom))', 
+          left: 'calc(24px + env(safe-area-inset-left))',
+          zIndex: 1000
+        }}
+        onClick={() => setMenuOpen(true)}
+      >
+        <MenuIcon />
+      </Fab>
 
-      {/* Custom Menu Modal - stays within iPhone wrapper */}
-      {showFabMenu && <>
+      {/* Bottom Sheet Menu - positioned within container */}
+      {menuOpen && (
+        <>
           {/* Backdrop */}
-          <div className="absolute inset-0 bg-black/50 z-40" onClick={() => setShowFabMenu(false)} />
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgcolor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 1200,
+            }}
+            onClick={() => setMenuOpen(false)}
+          />
           
           {/* Menu Content */}
-          <div className="absolute bottom-0 left-0 right-0 bg-background rounded-t-xl border-0 z-50 p-4">
-            <div className="grid grid-cols-2 gap-4">
-              {menuItems.map(item => <Button key={item.name} variant={item.active ? "default" : "outline"} className="h-16 flex flex-col gap-2" onClick={() => setShowFabMenu(false)}>
-                  <item.icon className="h-5 w-5" />
-                  <span className="text-xs">{item.name}</span>
-                </Button>)}
-            </div>
-            
-            {/* Collapse Button Row - 48px high */}
-            <div className="h-12 flex items-center justify-start">
-              <Button variant="ghost" className="h-12 w-12 rounded-full" onClick={() => setShowFabMenu(false)}>
-                <ChevronLeft className="h-8 w-8 text-white" />
-              </Button>
-            </div>
-          </div>
-        </>}
-    </div>;
+          <Box sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            bgcolor: 'background.paper',
+            borderRadius: '16px 16px 0 0',
+            boxShadow: 24,
+            p: 3,
+            zIndex: 1300,
+            transform: menuOpen ? 'translateY(0)' : 'translateY(100%)',
+            transition: 'transform 0.3s ease-in-out',
+          }}>
+            <Box sx={{ 
+              position: 'relative',
+              pb: 6 // Space for close button
+            }}>
+              {/* Grid of menu items */}
+              <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gridTemplateRows: '1fr 1fr 1fr',
+                gap: 2,
+                mb: 2
+              }}>
+                {menuItems.map((item, index) => (
+                  <Box
+                    key={index}
+                    component="button"
+                    onClick={() => {
+                      item.action();
+                      setMenuOpen(false);
+                    }}
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      p: 3,
+                      bgcolor: 'background.default',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      '&:hover': {
+                        bgcolor: 'action.hover',
+                        transform: 'translateY(-2px)',
+                        boxShadow: 2
+                      }
+                    }}
+                  >
+                    <Box sx={{ color: 'primary.main', mb: 1 }}>
+                      {item.icon}
+                    </Box>
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: 'text.primary',
+                        textAlign: 'center',
+                        fontWeight: 500
+                      }}
+                    >
+                      {item.text}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+
+              {/* Close button in lower left */}
+              <IconButton 
+                onClick={() => setMenuOpen(false)}
+                sx={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  bgcolor: 'background.default',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  '&:hover': {
+                    bgcolor: 'action.hover'
+                  }
+                }}
+              >
+                <Close />
+              </IconButton>
+            </Box>
+          </Box>
+        </>
+      )}
+    </Box>
+  );
 };
