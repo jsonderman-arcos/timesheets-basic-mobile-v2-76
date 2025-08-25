@@ -18,9 +18,13 @@ const AdditionalDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get total hours from query params (passed from time entry)
+  // Get total hours from query params or location state (passed from time entry)
   const searchParams = new URLSearchParams(location.search);
-  const totalHours = parseFloat(searchParams.get('totalHours') || '8.0');
+  const totalHours = parseFloat(
+    searchParams.get('totalHours') || 
+    location.state?.totalHours || 
+    '8.0'
+  );
   
   const [workingHours, setWorkingHours] = useState('');
   const [travelingHours, setTravelingHours] = useState('');
@@ -94,35 +98,14 @@ const AdditionalDetails = () => {
               )}
             </Box>
 
+            {/* Hours Breakdown */}
             <Box sx={{ mb: 3 }}>
-              <Typography variant="body2" color="text.primary" gutterBottom>
-                Notes
+              <Typography variant="h6" color="text.primary" gutterBottom>
+                Hours Breakdown
               </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                placeholder="Enter any notes or additional details here..."
-                variant="outlined"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: 'background.default',
-                  }
-                }}
-              />
-            </Box>
-
-            <Box sx={{ mb: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1, mb: 2 }}>
-                <Typography variant="h6" color="text.primary">
-                  Hours Breakdown
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Optional - Cannot exceed {totalHours} total hours
-                </Typography>
-              </Box>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                Optional - Cannot exceed {totalHours} total hours
+              </Typography>
               
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Box sx={{ flex: 1 }}>
@@ -197,6 +180,27 @@ const AdditionalDetails = () => {
                   />
                 </Box>
               </Box>
+            </Box>
+
+            {/* Notes Section */}
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="text.primary" gutterBottom>
+                Notes
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                placeholder="Enter any notes or additional details here..."
+                variant="outlined"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'background.default',
+                  }
+                }}
+              />
             </Box>
 
             <Button
