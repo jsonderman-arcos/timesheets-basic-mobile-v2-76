@@ -9,6 +9,11 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdditionalDetails from "./pages/AdditionalDetails";
 import Account from "./pages/Account";
+import Convoys from "./pages/Convoys";
+import TimeTracking from "./pages/TimeTracking";
+import Assess from "./pages/Assess";
+import Repairs from "./pages/Repairs";
+import Expenses from "./pages/Expenses";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +55,11 @@ const App = () => (
             <BrowserRouter>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/convoys" element={<Convoys />} />
+                <Route path="/time-tracking" element={<TimeTracking />} />
+                <Route path="/assess" element={<Assess />} />
+                <Route path="/repairs" element={<Repairs />} />
+                <Route path="/expenses" element={<Expenses />} />
                 <Route path="/additional-details" element={<AdditionalDetails />} />
                 <Route path="/account" element={<Account />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
