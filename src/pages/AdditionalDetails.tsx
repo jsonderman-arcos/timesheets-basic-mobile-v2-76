@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { 
   Card, 
@@ -6,27 +7,61 @@ import {
   TextField, 
   Button, 
   Box, 
-  Grid
+  Grid,
+  Alert
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { toast } from 'react-toastify';
 
 const AdditionalDetails = () => {
-  // Force cache refresh
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get total hours from query params (passed from time entry)
+  const searchParams = new URLSearchParams(location.search);
+  const totalHours = parseFloat(searchParams.get('totalHours') || '8.0');
+  
+  const [workingHours, setWorkingHours] = useState('');
+  const [travelingHours, setTravelingHours] = useState('');
+  const [standbyHours, setStandbyHours] = useState('');
+  const [notes, setNotes] = useState('');
   
   const handleBack = () => navigate("/");
   
   const handleSubmit = () => {
+    const totalCategorized = parseFloat(workingHours || '0') + 
+                            parseFloat(travelingHours || '0') + 
+                            parseFloat(standbyHours || '0');
+    
+    if (totalCategorized > totalHours) {
+      toast.error(`Total categorized hours (${totalCategorized}) cannot exceed total logged hours (${totalHours})`);
+      return;
+    }
+    
     toast.success("Details submitted successfully!");
     navigate("/");
   };
 
-  const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNumberInput = (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    setter: React.Dispatch<React.SetStateAction<string>>
+  ) => {
     const value = e.target.value.replace(/[^0-9.]/g, '');
-    e.target.value = value;
+    setter(value);
   };
+
+  const getTotalCategorized = () => {
+    return parseFloat(workingHours || '0') + 
+           parseFloat(travelingHours || '0') + 
+           parseFloat(standbyHours || '0');
+  };
+
+  const getRemainingHours = () => {
+    return Math.max(0, totalHours - getTotalCategorized());
+  };
+
+  const isOverLimit = getTotalCategorized() > totalHours;
 
   return (
     <Layout title="Additional Details" onBack={handleBack}>
@@ -44,6 +79,21 @@ const AdditionalDetails = () => {
           boxShadow: 3
         }}>
           <CardContent sx={{ p: 3 }}>
+            {/* Total Hours Display */}
+            <Box sx={{ mb: 3, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
+              <Typography variant="h6" color="text.primary" gutterBottom>
+                Total Logged Hours: {totalHours}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Categorized: {getTotalCategorized().toFixed(1)} | Remaining: {getRemainingHours().toFixed(1)}
+              </Typography>
+              {isOverLimit && (
+                <Alert severity="error" sx={{ mt: 1 }}>
+                  Categories exceed total hours by {(getTotalCategorized() - totalHours).toFixed(1)} hours
+                </Alert>
+              )}
+            </Box>
+
             <Box sx={{ mb: 3 }}>
               <Typography variant="body2" color="text.primary" gutterBottom>
                 Notes
@@ -54,6 +104,8 @@ const AdditionalDetails = () => {
                 rows={4}
                 placeholder="Enter any notes or additional details here..."
                 variant="outlined"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     bgcolor: 'background.default',
@@ -68,7 +120,7 @@ const AdditionalDetails = () => {
                   Hours Breakdown
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Optional
+                  Optional - Cannot exceed {totalHours} total hours
                 </Typography>
               </Box>
               
@@ -83,7 +135,12 @@ const AdditionalDetails = () => {
                     placeholder="0"
                     variant="outlined"
                     size="small"
-                    onChange={handleNumberInput}
+                    value={workingHours}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.]/g, '');
+                      setWorkingHours(value);
+                    }}
+                    error={isOverLimit}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         bgcolor: 'background.default',
@@ -102,7 +159,12 @@ const AdditionalDetails = () => {
                     placeholder="0"
                     variant="outlined"
                     size="small"
-                    onChange={handleNumberInput}
+                    value={travelingHours}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.]/g, '');
+                      setTravelingHours(value);
+                    }}
+                    error={isOverLimit}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         bgcolor: 'background.default',
@@ -121,7 +183,12 @@ const AdditionalDetails = () => {
                     placeholder="0"
                     variant="outlined"
                     size="small"
-                    onChange={handleNumberInput}
+                    value={standbyHours}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.]/g, '');
+                      setStandbyHours(value);
+                    }}
+                    error={isOverLimit}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         bgcolor: 'background.default',
