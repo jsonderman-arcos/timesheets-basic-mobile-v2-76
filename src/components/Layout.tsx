@@ -121,9 +121,9 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
       <Fab
         color="primary"
         sx={{ 
-          position: 'fixed', 
+          position: 'absolute', 
           bottom: 'calc(24px + env(safe-area-inset-bottom))', 
-          right: 'calc(24px + env(safe-area-inset-right))',
+          left: 'calc(24px + env(safe-area-inset-left))',
           zIndex: 1000
         }}
         onClick={() => setMenuOpen(true)}
