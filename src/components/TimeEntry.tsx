@@ -147,7 +147,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
 
   const isValid = crewMembers.every(member => {
     const entry = timeEntries[member.id];
-    return entry.startTime && entry.endTime && entry.startTime < entry.endTime;
+    return entry && entry.startTime && entry.endTime && entry.startTime < entry.endTime;
   });
 
   return (
