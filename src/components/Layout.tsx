@@ -71,7 +71,8 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
             <IconButton 
               edge="start" 
               onClick={onBack}
-              sx={{ mr: 1, color: 'text.primary' }}
+              className="text-contrast-text"
+              sx={{ mr: 1 }}
             >
               <ArrowBack />
             </IconButton>
@@ -79,7 +80,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           <Typography 
             variant="h6" 
             component="h1" 
-            className="text-contraxt"
+            className="text-contrast-text"
             sx={{ 
               flexGrow: 1, 
               fontWeight: 600
@@ -90,7 +91,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           <IconButton 
             edge="end" 
             onClick={() => navigate("/account")}
-            sx={{ color: 'text.primary' }}
+            className="text-contrast-text"
           >
             <Person />
           </IconButton>
