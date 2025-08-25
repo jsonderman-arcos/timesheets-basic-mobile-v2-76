@@ -40,13 +40,13 @@ const AdditionalDetails = () => {
             </div>
 
             <section aria-labelledby="activity-hours-heading" className="space-y-3">
-              <div>
+              <div className="flex items-center gap-2">
                 <h2 id="activity-hours-heading" className="text-base font-semibold text-foreground">
                   Hours Breakdown
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Optional - Break down hours by activity type
-                </p>
+                <span className="text-xs text-muted-foreground/70">
+                  Optional
+                </span>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
