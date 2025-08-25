@@ -13,7 +13,7 @@ const queryClient = new QueryClient();
 
 const theme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: 'light',
     primary: {
       main: '#3b82f6',
     },
@@ -21,12 +21,12 @@ const theme = createTheme({
       main: '#f59e0b',
     },
     background: {
-      default: '#0f172a',
-      paper: '#1e293b',
+      default: '#ffffff',
+      paper: '#f8fafc',
     },
     text: {
-      primary: '#f8fafc',
-      secondary: '#cbd5e1',
+      primary: '#0f172a',
+      secondary: '#64748b',
     },
   },
   shape: {
