@@ -78,9 +78,9 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           <Typography 
             variant="h6" 
             component="h1" 
+            className="text-contraxt"
             sx={{ 
               flexGrow: 1, 
-              color: 'text.primary',
               fontWeight: 600
             }}
           >
