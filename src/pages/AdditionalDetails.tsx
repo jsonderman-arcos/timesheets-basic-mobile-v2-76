@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { toast } from 'react-toastify';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -19,9 +21,11 @@ const AdditionalDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get individual member hours and editing mode from location state
+  // Get individual member hours from location state
   const memberHours = location.state?.memberHours || [];
-  const editedIndividually = location.state?.editedIndividually || false;
+  
+  // State for controlling individual vs crew editing mode
+  const [editedIndividually, setEditedIndividually] = useState(false);
   
   // Calculate total hours based on editing mode
   const totalHours = editedIndividually 
@@ -268,6 +272,18 @@ const AdditionalDetails = () => {
           boxShadow: 3
         }}>
           <CardContent sx={{ p: 3 }}>
+            {/* Toggle for editing mode */}
+            <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Switch
+                id="edit-individual-times"
+                checked={editedIndividually}
+                onCheckedChange={setEditedIndividually}
+              />
+              <Label htmlFor="edit-individual-times" className="text-sm font-medium">
+                Edit Individual Times
+              </Label>
+            </Box>
+
             {editedIndividually ? (
               // Individual Member View - show each member separately
               <>
