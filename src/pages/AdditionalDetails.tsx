@@ -49,134 +49,47 @@ const AdditionalDetails = () => {
                 </span>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor="working-hours" className="text-foreground">Working</Label>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 shrink-0"
-                      onClick={() => {
-                        const input = document.getElementById('working-hours') as HTMLInputElement;
-                        const currentValue = parseFloat(input.value) || 0;
-                        const newValue = Math.max(0, currentValue - 0.5);
-                        input.value = newValue.toString();
-                      }}
-                    >
-                      -
-                    </Button>
-                    <Input
-                      id="working-hours"
-                      type="number"
-                      inputMode="decimal"
-                      placeholder="0"
-                      min={0}
-                      step={0.5}
-                      aria-label="Working hours"
-                      className="text-center"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 shrink-0"
-                      onClick={() => {
-                        const input = document.getElementById('working-hours') as HTMLInputElement;
-                        const currentValue = parseFloat(input.value) || 0;
-                        const newValue = currentValue + 0.5;
-                        input.value = newValue.toString();
-                      }}
-                    >
-                      +
-                    </Button>
-                  </div>
+                  <Input
+                    id="working-hours"
+                    type="text"
+                    pattern="[0-9]*\.?[0-9]*"
+                    placeholder="0"
+                    aria-label="Working hours"
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      target.value = target.value.replace(/[^0-9.]/g, '');
+                    }}
+                  />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor="traveling-hours" className="text-foreground">Traveling</Label>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 shrink-0"
-                      onClick={() => {
-                        const input = document.getElementById('traveling-hours') as HTMLInputElement;
-                        const currentValue = parseFloat(input.value) || 0;
-                        const newValue = Math.max(0, currentValue - 0.5);
-                        input.value = newValue.toString();
-                      }}
-                    >
-                      -
-                    </Button>
-                    <Input
-                      id="traveling-hours"
-                      type="number"
-                      inputMode="decimal"
-                      placeholder="0"
-                      min={0}
-                      step={0.5}
-                      aria-label="Traveling hours"
-                      className="text-center"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 shrink-0"
-                      onClick={() => {
-                        const input = document.getElementById('traveling-hours') as HTMLInputElement;
-                        const currentValue = parseFloat(input.value) || 0;
-                        const newValue = currentValue + 0.5;
-                        input.value = newValue.toString();
-                      }}
-                    >
-                      +
-                    </Button>
-                  </div>
+                  <Input
+                    id="traveling-hours"
+                    type="text"
+                    pattern="[0-9]*\.?[0-9]*"
+                    placeholder="0"
+                    aria-label="Traveling hours"
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      target.value = target.value.replace(/[^0-9.]/g, '');
+                    }}
+                  />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Label htmlFor="standby-hours" className="text-foreground">Standby</Label>
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 shrink-0"
-                      onClick={() => {
-                        const input = document.getElementById('standby-hours') as HTMLInputElement;
-                        const currentValue = parseFloat(input.value) || 0;
-                        const newValue = Math.max(0, currentValue - 0.5);
-                        input.value = newValue.toString();
-                      }}
-                    >
-                      -
-                    </Button>
-                    <Input
-                      id="standby-hours"
-                      type="number"
-                      inputMode="decimal"
-                      placeholder="0"
-                      min={0}
-                      step={0.5}
-                      aria-label="Standby hours"
-                      className="text-center"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 shrink-0"
-                      onClick={() => {
-                        const input = document.getElementById('standby-hours') as HTMLInputElement;
-                        const currentValue = parseFloat(input.value) || 0;
-                        const newValue = currentValue + 0.5;
-                        input.value = newValue.toString();
-                      }}
-                    >
-                      +
-                    </Button>
-                  </div>
+                  <Input
+                    id="standby-hours"
+                    type="text"
+                    pattern="[0-9]*\.?[0-9]*"
+                    placeholder="0"
+                    aria-label="Standby hours"
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      target.value = target.value.replace(/[^0-9.]/g, '');
+                    }}
+                  />
                 </div>
               </div>
             </section>
