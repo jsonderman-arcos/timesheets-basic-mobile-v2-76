@@ -240,7 +240,7 @@ const handleConfirmSchedule = () => {
             <Grid3X3 className="h-6 w-6" />
           </Button>
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-auto mx-0 rounded-t-xl inset-x-0 bottom-0 max-w-none w-full border-0">
+        <SheetContent side="bottom" className="h-auto rounded-t-xl border-0 left-0 right-0 bottom-0 mx-0 max-w-[393px]">
           <div className="grid grid-cols-2 gap-4 p-4">
             {menuItems.map((item) => (
               <Button
