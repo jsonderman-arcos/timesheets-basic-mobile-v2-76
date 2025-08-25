@@ -104,7 +104,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
     }
 
     try {
-      // Prepare member hours data
+      // Prepare member hours data with real crew member IDs
       const memberHours = crewMembers.map(member => {
         const entry = timeEntries[member.id];
         const hours = calculateHours(entry.startTime, entry.endTime);
@@ -116,15 +116,14 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
         };
       });
 
-      // Save to database - for now we'll use mock crew_id and member_id
-      // In a real app, these would come from authenticated user data
+      // Save to database using the real crew_id
       const timeEntryInserts = memberHours.map(memberData => ({
         date: selectedDate.toISOString().split('T')[0],
         start_time: memberData.startTime,
         end_time: memberData.endTime,
         hours_regular: memberData.hours,
-        crew_id: '00000000-0000-0000-0000-000000000001', // Mock crew_id
-        member_id: '00000000-0000-0000-0000-000000000001', // Mock member_id
+        crew_id: '8685dabc-746e-4fe8-90a3-c41035c79dc0', // Use the real crew_id from database
+        member_id: memberData.memberId, // Use the real member_id
         status: 'submitted'
       }));
 

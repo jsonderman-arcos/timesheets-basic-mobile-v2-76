@@ -38,14 +38,14 @@ export const ScheduleVerification = () => {
     }
   }, [location.state]);
 
-  // Mock crew data - all with same schedule
+  // Use real crew member IDs from the database
   const crewMembers = [
-    { id: '1', name: 'You', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '2', name: 'Alex Johnson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '3', name: 'Sarah Davis', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '4', name: 'Mike Rodriguez', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '5', name: 'Emma Wilson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
-    { id: '6', name: 'David Brown', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '00000000-0000-0000-0000-000000000001', name: 'You', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '00000000-0000-0000-0000-000000000002', name: 'Alex Johnson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '00000000-0000-0000-0000-000000000003', name: 'Sarah Davis', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '00000000-0000-0000-0000-000000000004', name: 'Mike Rodriguez', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '00000000-0000-0000-0000-000000000005', name: 'Emma Wilson', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
+    { id: '00000000-0000-0000-0000-000000000006', name: 'David Brown', scheduledStart: '9:00 AM', scheduledEnd: '5:00 PM' },
   ];
   
   const formatDate = (date: Date) => {
