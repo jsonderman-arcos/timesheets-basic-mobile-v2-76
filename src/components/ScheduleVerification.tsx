@@ -107,12 +107,17 @@ const handleConfirmSchedule = () => {
           <div className="w-16 h-16 bg-[var(--gradient-primary)] rounded-full flex items-center justify-center mx-auto mb-4">
             <Clock className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+          <h1 className="text-2xl font-bold text-foreground">
             Schedule Verification
           </h1>
-          
+        </div>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <div className="space-y-6">
           {/* Date Navigation */}
-          <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center justify-center gap-2 mb-6">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -155,12 +160,6 @@ const handleConfirmSchedule = () => {
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </div>
-      </div>
-
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4">
-        <div className="space-y-6">
           <div className="space-y-4">
             <p className="text-center text-foreground font-medium">
               Did everyone work their scheduled hours on this day?
