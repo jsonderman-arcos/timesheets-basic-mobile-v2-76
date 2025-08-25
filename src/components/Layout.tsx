@@ -75,7 +75,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
         <Toolbar sx={{ 
           minHeight: '64px !important', 
           px: 2,
-          bgcolor: 'hsl(var(--brand-dark-500))'
+          bgcolor: 'var(--theme-base-background-brand-dark-tone)'
         }}>
           {onBack && (
             <IconButton 
