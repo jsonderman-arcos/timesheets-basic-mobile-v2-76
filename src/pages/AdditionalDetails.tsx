@@ -40,45 +40,143 @@ const AdditionalDetails = () => {
             </div>
 
             <section aria-labelledby="activity-hours-heading" className="space-y-3">
-              <h2 id="activity-hours-heading" className="text-base font-semibold text-foreground">
-                Hours Breakdown
-              </h2>
+              <div>
+                <h2 id="activity-hours-heading" className="text-base font-semibold text-foreground">
+                  Hours Breakdown
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Optional - Break down hours by activity type
+                </p>
+              </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <Label htmlFor="working-hours" className="text-foreground">Working</Label>
-                  <Input
-                    id="working-hours"
-                    type="number"
-                    inputMode="decimal"
-                    placeholder="0"
-                    min={0}
-                    step={0.5}
-                    aria-label="Working hours"
-                  />
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 shrink-0"
+                      onClick={() => {
+                        const input = document.getElementById('working-hours') as HTMLInputElement;
+                        const currentValue = parseFloat(input.value) || 0;
+                        const newValue = Math.max(0, currentValue - 0.5);
+                        input.value = newValue.toString();
+                      }}
+                    >
+                      -
+                    </Button>
+                    <Input
+                      id="working-hours"
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="0"
+                      min={0}
+                      step={0.5}
+                      aria-label="Working hours"
+                      className="text-center"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 shrink-0"
+                      onClick={() => {
+                        const input = document.getElementById('working-hours') as HTMLInputElement;
+                        const currentValue = parseFloat(input.value) || 0;
+                        const newValue = currentValue + 0.5;
+                        input.value = newValue.toString();
+                      }}
+                    >
+                      +
+                    </Button>
+                  </div>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <Label htmlFor="traveling-hours" className="text-foreground">Traveling</Label>
-                  <Input
-                    id="traveling-hours"
-                    type="number"
-                    inputMode="decimal"
-                    placeholder="0"
-                    min={0}
-                    step={0.5}
-                    aria-label="Traveling hours"
-                  />
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 shrink-0"
+                      onClick={() => {
+                        const input = document.getElementById('traveling-hours') as HTMLInputElement;
+                        const currentValue = parseFloat(input.value) || 0;
+                        const newValue = Math.max(0, currentValue - 0.5);
+                        input.value = newValue.toString();
+                      }}
+                    >
+                      -
+                    </Button>
+                    <Input
+                      id="traveling-hours"
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="0"
+                      min={0}
+                      step={0.5}
+                      aria-label="Traveling hours"
+                      className="text-center"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 shrink-0"
+                      onClick={() => {
+                        const input = document.getElementById('traveling-hours') as HTMLInputElement;
+                        const currentValue = parseFloat(input.value) || 0;
+                        const newValue = currentValue + 0.5;
+                        input.value = newValue.toString();
+                      }}
+                    >
+                      +
+                    </Button>
+                  </div>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <Label htmlFor="standby-hours" className="text-foreground">Standby</Label>
-                  <Input
-                    id="standby-hours"
-                    type="number"
-                    inputMode="decimal"
-                    placeholder="0"
-                    min={0}
-                    step={0.5}
-                    aria-label="Standby hours"
-                  />
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 shrink-0"
+                      onClick={() => {
+                        const input = document.getElementById('standby-hours') as HTMLInputElement;
+                        const currentValue = parseFloat(input.value) || 0;
+                        const newValue = Math.max(0, currentValue - 0.5);
+                        input.value = newValue.toString();
+                      }}
+                    >
+                      -
+                    </Button>
+                    <Input
+                      id="standby-hours"
+                      type="number"
+                      inputMode="decimal"
+                      placeholder="0"
+                      min={0}
+                      step={0.5}
+                      aria-label="Standby hours"
+                      className="text-center"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 shrink-0"
+                      onClick={() => {
+                        const input = document.getElementById('standby-hours') as HTMLInputElement;
+                        const currentValue = parseFloat(input.value) || 0;
+                        const newValue = currentValue + 0.5;
+                        input.value = newValue.toString();
+                      }}
+                    >
+                      +
+                    </Button>
+                  </div>
                 </div>
               </div>
             </section>
