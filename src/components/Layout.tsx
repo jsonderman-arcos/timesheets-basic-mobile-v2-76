@@ -32,7 +32,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
               className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:bg-white/20"
               onClick={onBack}
             >
-              <ChevronLeft className="h-6 w-6" />
+              <ChevronLeft className="h-12 w-12" />
             </Button>
           )}
           <h1 className="text-2xl font-bold">
