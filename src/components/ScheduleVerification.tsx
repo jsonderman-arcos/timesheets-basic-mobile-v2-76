@@ -1,14 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Clock, CheckCircle, XCircle, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Box,
+  IconButton,
+  Paper,
+  Chip
+} from '@mui/material';
+import {
+  CheckCircle,
+  Cancel,
+  ChevronLeft,
+  ChevronRight,
+  CalendarToday,
+  Schedule
+} from '@mui/icons-material';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { TimeEntry } from './TimeEntry';
 import { Layout } from './Layout';
+import { toast } from 'react-toastify';
 
 export const ScheduleVerification = () => {
   const [showTimeEntry, setShowTimeEntry] = useState(false);
@@ -16,10 +29,12 @@ export const ScheduleVerification = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const navigate = useNavigate();
   const location = useLocation();
+
   useEffect(() => {
     const st = location.state as any;
     if (st?.showSuccess) {
       setIsCompleted(true);
+      toast.success('Schedule updated successfully!');
     }
   }, [location.state]);
 
@@ -58,17 +73,9 @@ export const ScheduleVerification = () => {
     setShowTimeEntry(false);
   };
 
-  const handleDateSelect = (date: Date | undefined) => {
-    if (date) {
-      setSelectedDate(date);
-      setIsCompleted(false);
-      setShowTimeEntry(false);
-    }
+  const handleConfirmSchedule = () => {
+    navigate('/additional-details');
   };
-
-const handleConfirmSchedule = () => {
-  navigate('/additional-details');
-};
 
   const handleDenySchedule = () => {
     setShowTimeEntry(true);
@@ -81,16 +88,31 @@ const handleConfirmSchedule = () => {
   if (isCompleted) {
     return (
       <Layout title="Schedule Verification">
-        <div className="flex items-center justify-center min-h-full p-4">
-          <Card className="w-full max-w-md shadow-[var(--shadow-soft)] border-0 bg-[var(--gradient-card)]">
-            <CardContent className="p-8 text-center">
-              <h2 className="text-2xl font-bold text-foreground mb-2">All Set!</h2>
-              <p className="text-muted-foreground">
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          minHeight: '100%', 
+          p: 2 
+        }}>
+          <Card sx={{ 
+            width: '100%', 
+            maxWidth: 400,
+            textAlign: 'center',
+            bgcolor: 'background.paper',
+            boxShadow: 3
+          }}>
+            <CardContent sx={{ p: 4 }}>
+              <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
+              <Typography variant="h5" fontWeight="bold" color="text.primary" gutterBottom>
+                All Set!
+              </Typography>
+              <Typography color="text.secondary">
                 Your work hours have been recorded. Thank you for updating your schedule.
-              </p>
+              </Typography>
             </CardContent>
           </Card>
-        </div>
+        </Box>
       </Layout>
     );
   }
@@ -101,112 +123,164 @@ const handleConfirmSchedule = () => {
 
   return (
     <Layout title="Schedule Verification">
-      <div className="space-y-6">
+      <Box sx={{ p: 2, space: 3 }}>
         {/* Date Navigation */}
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          gap: 1, 
+          mb: 3 
+        }}>
+          <IconButton 
             onClick={goToPreviousDay}
-            className="h-8 w-8 p-0"
+            size="small"
+            sx={{ color: 'text.secondary' }}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft />
+          </IconButton>
+          
+          <Button
+            variant="text"
+            startIcon={<CalendarToday />}
+            sx={{ 
+              color: 'text.primary',
+              fontWeight: 'normal',
+              textTransform: 'none'
+            }}
+          >
+            {formatDate(selectedDate)}
           </Button>
           
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                className={cn(
-                  "flex items-center gap-2 text-muted-foreground hover:text-foreground font-normal",
-                  "min-w-0 px-2"
-                )}
-              >
-                <CalendarIcon className="w-4 h-4" />
-                <span className="text-sm">{formatDate(selectedDate)}</span>
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="center">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateSelect}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </PopoverContent>
-          </Popover>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <IconButton 
             onClick={goToNextDay}
-            className="h-8 w-8 p-0"
+            size="small"
+            sx={{ color: 'text.secondary' }}
           >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-        <div className="space-y-4">
-          <p className="text-center text-foreground font-medium">
+            <ChevronRight />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ space: 2 }}>
+          <Typography 
+            variant="body1" 
+            textAlign="center" 
+            color="text.primary" 
+            fontWeight="medium"
+            sx={{ mb: 3 }}
+          >
             Did everyone work their scheduled hours on this day?
-          </p>
+          </Typography>
           
-          <div className="space-y-3">
+          <Box sx={{ space: 1.5, mb: 3 }}>
             <Button 
-              variant="success" 
-              size="lg" 
-              className="w-full"
+              variant="contained"
+              color="success"
+              size="large"
+              fullWidth
+              startIcon={<CheckCircle />}
               onClick={handleConfirmSchedule}
+              sx={{ 
+                mb: 1.5,
+                py: 1.5,
+                textTransform: 'none',
+                fontSize: '1rem'
+              }}
             >
-              <CheckCircle className="w-5 h-5 mr-2" />
               Yes, everyone worked scheduled hours
             </Button>
             
             <Button 
-              variant="outline" 
-              size="lg" 
-              className="w-full"
+              variant="outlined"
+              size="large"
+              fullWidth
+              startIcon={<Cancel />}
               onClick={handleDenySchedule}
+              sx={{ 
+                py: 1.5,
+                textTransform: 'none',
+                fontSize: '1rem'
+              }}
             >
-              <XCircle className="w-5 h-5 mr-2" />
               No, need to edit hours
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
 
-        <div className="bg-muted/50 rounded-lg p-4 space-y-4">
-          <h3 className="font-semibold text-foreground mb-3">Scheduled Hours</h3>
-          <div className="bg-background/50 rounded-md p-3 space-y-2">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Start Time:</span>
-                <span className="font-medium text-foreground">{crewMembers[0].scheduledStart}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">End Time:</span>
-                <span className="font-medium text-foreground">{crewMembers[0].scheduledEnd}</span>
-              </div>
-            </div>
-            <div className="border-t border-border pt-2 mt-3">
-              <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Total Hours:</span>
-                <span className="font-semibold text-foreground">8 hours</span>
-              </div>
-            </div>
-          </div>
+        <Paper sx={{ 
+          bgcolor: 'background.paper', 
+          p: 3, 
+          borderRadius: 2,
+          border: 1,
+          borderColor: 'divider'
+        }}>
+          <Typography variant="h6" fontWeight="semibold" color="text.primary" gutterBottom>
+            Scheduled Hours
+          </Typography>
           
-          <div>
-            <h4 className="font-medium text-foreground mb-2">Crew Members</h4>
-            <div className="grid grid-cols-2 gap-2">
+          <Paper sx={{ 
+            bgcolor: 'background.default', 
+            p: 2, 
+            mb: 2,
+            borderRadius: 1
+          }}>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography color="text.secondary">Start Time:</Typography>
+                  <Typography fontWeight="medium" color="text.primary">
+                    {crewMembers[0].scheduledStart}
+                  </Typography>
+                </Box>
+              </Box>
+              <Box sx={{ flex: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography color="text.secondary">End Time:</Typography>
+                  <Typography fontWeight="medium" color="text.primary">
+                    {crewMembers[0].scheduledEnd}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+            
+            <Box sx={{ 
+              borderTop: 1, 
+              borderColor: 'divider', 
+              pt: 1, 
+              mt: 2,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <Typography color="text.secondary">Total Hours:</Typography>
+              <Typography fontWeight="bold" color="text.primary">8 hours</Typography>
+            </Box>
+          </Paper>
+          
+          <Box>
+            <Typography variant="subtitle1" fontWeight="medium" color="text.primary" gutterBottom>
+              Crew Members
+            </Typography>
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(2, 1fr)', 
+              gap: 1 
+            }}>
               {crewMembers.map((member) => (
-                <div key={member.id} className="bg-background/50 rounded-md px-3 py-2">
-                  <span className="text-foreground text-sm">{member.name}</span>
-                </div>
+                <Chip
+                  key={member.id}
+                  label={member.name}
+                  variant="outlined"
+                  sx={{ 
+                    bgcolor: 'background.default',
+                    justifyContent: 'flex-start'
+                  }}
+                />
               ))}
-            </div>
-          </div>
-        </div>
-      </div>
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
     </Layout>
   );
 };
