@@ -5,15 +5,7 @@ import {
   Typography, 
   IconButton, 
   Fab, 
-  Modal, 
-  Box, 
-  List, 
-  ListItem, 
-  ListItemButton, 
-  ListItemIcon, 
-  ListItemText,
-  Slide,
-  Backdrop
+  Box
 } from "@mui/material";
 import { 
   ArrowBack, 
@@ -31,19 +23,6 @@ interface LayoutProps {
   onBack?: () => void;
 }
 
-const modalStyle = {
-  position: 'absolute' as 'absolute',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  bgcolor: 'background.paper',
-  borderRadius: '16px 16px 0 0',
-  boxShadow: 24,
-  p: 3,
-  maxHeight: '50vh',
-  overflow: 'auto',
-  zIndex: 1300,
-};
 
 export const Layout = ({ children, title, onBack }: LayoutProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -134,18 +113,39 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
         <MenuIcon />
       </Fab>
 
-      {/* Bottom Sheet Menu */}
-      <Modal
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{ timeout: 500 }}
-        container={() => document.querySelector('[class*="w-[393px]"]') || document.body}
-        disablePortal={true}
-      >
-        <Slide direction="up" in={menuOpen} mountOnEnter unmountOnExit>
-          <Box sx={modalStyle}>
+      {/* Bottom Sheet Menu - positioned within container */}
+      {menuOpen && (
+        <>
+          {/* Backdrop */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              bgcolor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 1200,
+            }}
+            onClick={() => setMenuOpen(false)}
+          />
+          
+          {/* Menu Content */}
+          <Box sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            bgcolor: 'background.paper',
+            borderRadius: '16px 16px 0 0',
+            boxShadow: 24,
+            p: 3,
+            maxHeight: '50vh',
+            overflow: 'auto',
+            zIndex: 1300,
+            transform: menuOpen ? 'translateY(0)' : 'translateY(100%)',
+            transition: 'transform 0.3s ease-in-out',
+          }}>
             <Box sx={{ 
               position: 'relative',
               pb: 6 // Space for close button
@@ -221,8 +221,8 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
               </IconButton>
             </Box>
           </Box>
-        </Slide>
-      </Modal>
+        </>
+      )}
     </Box>
   );
 };
