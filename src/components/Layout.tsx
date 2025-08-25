@@ -15,7 +15,8 @@ import {
   Settings, 
   Close,
   LocalShipping,
-  Build
+  Build,
+  Person
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
@@ -86,6 +87,13 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           >
             {title}
           </Typography>
+          <IconButton 
+            edge="end" 
+            onClick={() => navigate("/account")}
+            sx={{ color: 'text.primary' }}
+          >
+            <Person />
+          </IconButton>
         </Toolbar>
       </AppBar>
 
