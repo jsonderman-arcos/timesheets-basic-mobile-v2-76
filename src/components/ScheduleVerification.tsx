@@ -25,6 +25,9 @@ import { TimeEntry } from './TimeEntry';
 import { Layout } from './Layout';
 import { toast } from 'react-toastify';
 import { supabase } from '@/integrations/supabase/client';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 export const ScheduleVerification = () => {
   const [showTimeEntry, setShowTimeEntry] = useState(false);
@@ -266,17 +269,30 @@ export const ScheduleVerification = () => {
               <ChevronLeft />
             </IconButton>
             
-            <Button
-              variant="text"
-              startIcon={<CalendarToday />}
-              sx={{ 
-                color: 'text.primary',
-                fontWeight: 'normal',
-                textTransform: 'none'
-              }}
-            >
-              {formatDate(selectedDate)}
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="text"
+                  startIcon={<CalendarToday />}
+                  sx={{ 
+                    color: 'text.primary',
+                    fontWeight: 'normal',
+                    textTransform: 'none'
+                  }}
+                >
+                  {formatDate(selectedDate)}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="center">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => date && setSelectedDate(date)}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
             
             <IconButton 
               onClick={goToNextDay}
@@ -446,17 +462,30 @@ export const ScheduleVerification = () => {
             <ChevronLeft />
           </IconButton>
           
-          <Button
-            variant="text"
-            startIcon={<CalendarToday />}
-            sx={{ 
-              color: 'text.primary',
-              fontWeight: 'normal',
-              textTransform: 'none'
-            }}
-          >
-            {formatDate(selectedDate)}
-          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="text"
+                startIcon={<CalendarToday />}
+                sx={{ 
+                  color: 'text.primary',
+                  fontWeight: 'normal',
+                  textTransform: 'none'
+                }}
+              >
+                {formatDate(selectedDate)}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => date && setSelectedDate(date)}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
           
           <IconButton 
             onClick={goToNextDay}
