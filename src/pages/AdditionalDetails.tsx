@@ -288,7 +288,7 @@ const AdditionalDetails = () => {
               <Box sx={{ space: 1 }}>
                 {memberHours.length > 0 ? (
                   memberHours.map((member: any) => (
-                    <Card key={member.memberId} sx={{ mb: 1, bgcolor: 'background.paper' }}>
+                    <Card key={member.memberId} sx={{ mb: 1, bgcolor: 'white' }}>
                       <CardContent sx={{ py: 2 }}>
                         {/* Member Header */}
                         <Typography variant="subtitle1" gutterBottom>
