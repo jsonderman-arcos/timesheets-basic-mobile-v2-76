@@ -37,6 +37,7 @@ export const ScheduleVerification = () => {
   const [timeEntries, setTimeEntries] = useState<any[]>([]);
   const [hoursBreakdown, setHoursBreakdown] = useState<any[]>([]);
   const [loading, setLoading] = useState(true); // Start with loading true to prevent flash
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -269,7 +270,7 @@ export const ScheduleVerification = () => {
               <ChevronLeft />
             </IconButton>
             
-            <Popover>
+            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="text"
@@ -287,7 +288,12 @@ export const ScheduleVerification = () => {
                 <Calendar
                   mode="single"
                   selected={selectedDate}
-                  onSelect={(date) => date && setSelectedDate(date)}
+                  onSelect={(date) => {
+                    if (date) {
+                      setSelectedDate(date);
+                      setDatePickerOpen(false);
+                    }
+                  }}
                   initialFocus
                   className={cn("p-3 pointer-events-auto")}
                 />
@@ -462,7 +468,7 @@ export const ScheduleVerification = () => {
             <ChevronLeft />
           </IconButton>
           
-          <Popover>
+          <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
             <PopoverTrigger asChild>
               <Button
                 variant="text"
@@ -480,7 +486,12 @@ export const ScheduleVerification = () => {
               <Calendar
                 mode="single"
                 selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
+                onSelect={(date) => {
+                  if (date) {
+                    setSelectedDate(date);
+                    setDatePickerOpen(false);
+                  }
+                }}
                 initialFocus
                 className={cn("p-3 pointer-events-auto")}
               />
