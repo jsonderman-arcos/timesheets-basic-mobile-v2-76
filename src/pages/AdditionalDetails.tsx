@@ -8,12 +8,12 @@ import {
   Button, 
   Box, 
   Grid,
-  Alert
+  Alert,
+  FormControlLabel,
+  Switch
 } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { toast } from 'react-toastify';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -272,17 +272,16 @@ const AdditionalDetails = () => {
           boxShadow: 3
         }}>
           <CardContent sx={{ p: 3 }}>
-            {/* Toggle for editing mode */}
-            <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Switch
-                id="edit-individual-times"
-                checked={editedIndividually}
-                onCheckedChange={setEditedIndividually}
-              />
-              <Label htmlFor="edit-individual-times" className="text-sm font-medium">
-                Edit Individual Times
-              </Label>
-            </Box>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={editedIndividually}
+                  onChange={(e) => setEditedIndividually(e.target.checked)}
+                />
+              }
+              label="Edit individual times"
+              sx={{ mb: 2 }}
+            />
 
             {editedIndividually ? (
               // Individual Member View - show each member separately
