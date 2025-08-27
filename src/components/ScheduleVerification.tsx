@@ -283,7 +283,7 @@ export const ScheduleVerification = () => {
                   {formatDate(selectedDate)}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="center">
+              <PopoverContent className="w-auto p-0 bg-white" align="center">
                 <Calendar
                   mode="single"
                   selected={selectedDate}
@@ -476,7 +476,7 @@ export const ScheduleVerification = () => {
                 {formatDate(selectedDate)}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="center">
+            <PopoverContent className="w-auto p-0 bg-white" align="center">
               <Calendar
                 mode="single"
                 selected={selectedDate}
