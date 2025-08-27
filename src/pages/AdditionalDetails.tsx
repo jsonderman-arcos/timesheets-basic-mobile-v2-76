@@ -285,32 +285,30 @@ const AdditionalDetails = () => {
 
             {editedIndividually ? (
               // Individual Member View - show each member separately
-              <>
+              <Box sx={{ space: 1 }}>
                 {memberHours.length > 0 ? (
                   memberHours.map((member: any) => (
-                    <Box key={member.memberId} sx={{ mb: 4 }}>
-                      {/* Member Header */}
-                      <Box sx={{ mb: 2, p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
-                        <Typography variant="h6" color="text.primary" gutterBottom>
+                    <Card key={member.memberId} sx={{ mb: 1, bgcolor: 'background.paper' }}>
+                      <CardContent sx={{ py: 2 }}>
+                        {/* Member Header */}
+                        <Typography variant="subtitle1" gutterBottom>
                           {member.memberId === '3751647d-f0ae-4d62-a0a1-9a0bd3dbc2b1' ? 'David Brown' :
                            member.memberId === '47e34e83-b887-4d79-82a9-ffc1f63f5e17' ? 'John Smith' :
                            member.memberId === 'c648a699-cf2a-4ac7-bce8-19883a0db42b' ? 'Mike Johnson' :
                            member.memberId === '54704459-cf20-4137-9f6c-0c58ab8ac8b9' ? 'Sarah Williams' :
                            'Unknown Member'} - {member.hours.toFixed(1)} hours
                         </Typography>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                           Categorized: {getMemberTotalCategorized(member.memberId).toFixed(1)} | Remaining: {getMemberRemainingHours(member).toFixed(1)}
                         </Typography>
                         {isMemberOverLimit(member) && (
-                          <Alert severity="error" sx={{ mt: 1 }}>
+                          <Alert severity="error" sx={{ mb: 2 }}>
                             Categories exceed logged hours by {(getMemberTotalCategorized(member.memberId) - member.hours).toFixed(1)} hours
                           </Alert>
                         )}
-                      </Box>
 
-                      {/* Hours Breakdown for this member */}
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="h6" color="text.primary" gutterBottom>
+                        {/* Hours Breakdown for this member */}
+                        <Typography variant="body2" color="text.primary" gutterBottom>
                           Hours Breakdown
                         </Typography>
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
@@ -381,15 +379,15 @@ const AdditionalDetails = () => {
                             />
                           </Box>
                         </Box>
-                      </Box>
-                    </Box>
+                      </CardContent>
+                    </Card>
                   ))
                 ) : (
                   <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
                     No crew member hours data available
                   </Typography>
                 )}
-              </>
+              </Box>
             ) : (
               // Total Crew View - show aggregate hours
               <>
