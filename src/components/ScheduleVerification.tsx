@@ -253,61 +253,71 @@ export const ScheduleVerification = () => {
   if (hasTimeEntries && !showTimeEntry) {
     return (
       <Layout title="Time Tracking Overview">
-        <Box sx={{ p: 2 }}>
-          {/* Date Navigation */}
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            gap: 1, 
-            mb: 3 
-          }}>
-            <IconButton 
-              onClick={goToPreviousDay}
-              size="small"
-              sx={{ color: 'text.secondary' }}
-            >
-              <ChevronLeft />
-            </IconButton>
-            
-            <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="text"
-                  startIcon={<CalendarToday />}
-                  sx={{ 
-                    color: 'text.primary',
-                    fontWeight: 'normal',
-                    textTransform: 'none'
-                  }}
-                >
-                  {formatDate(selectedDate)}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-white" align="center">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      setSelectedDate(date);
-                      setDatePickerOpen(false);
-                    }
-                  }}
-                  initialFocus
-                  className={cn("p-3 pointer-events-auto")}
-                />
-              </PopoverContent>
-            </Popover>
-            
-            <IconButton 
-              onClick={goToNextDay}
-              size="small"
-              sx={{ color: 'text.secondary' }}
-            >
-              <ChevronRight />
-            </IconButton>
-          </Box>
+        {/* Date Navigation - Sticky at top */}
+        <Box sx={{ 
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          bgcolor: 'background.default',
+          borderBottom: 1,
+          borderColor: 'divider',
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          gap: 1,
+          py: 2
+        }}>
+          <IconButton 
+            onClick={goToPreviousDay}
+            size="small"
+            sx={{ color: 'text.secondary' }}
+          >
+            <ChevronLeft />
+          </IconButton>
+          
+          <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="text"
+                startIcon={<CalendarToday />}
+                sx={{ 
+                  color: 'text.primary',
+                  fontWeight: 'normal',
+                  textTransform: 'none'
+                }}
+              >
+                {formatDate(selectedDate)}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-white" align="center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => {
+                  if (date) {
+                    setSelectedDate(date);
+                    setDatePickerOpen(false);
+                  }
+                }}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          
+          <IconButton 
+            onClick={goToNextDay}
+            size="small"
+            sx={{ color: 'text.secondary' }}
+          >
+            <ChevronRight />
+          </IconButton>
+        </Box>
+
+        {/* Scrollable Content */}
+        <Box sx={{ p: 2, pt: 0 }}>
 
           {/* Time Tracking Overview */}
           <Paper sx={{ 
@@ -450,9 +460,7 @@ export const ScheduleVerification = () => {
   console.log('Showing initial entry interface - no existing entries found');
   return (
     <Layout title="Schedule Verification">
-      <Box sx={{ p: 2 }}>
-        {/* Initial Entry Interface - Only shown when no entries exist */}
-        {/* Date Navigation */}
+        {/* Date Navigation - Sticky at top */}
         <Box sx={{ 
           position: 'sticky',
           top: 0,
@@ -462,13 +470,11 @@ export const ScheduleVerification = () => {
           bgcolor: 'background.default',
           borderBottom: 1,
           borderColor: 'divider',
-          mx: -2,
-          px: 2,
-          py: 2,
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
-          gap: 1
+          gap: 1,
+          py: 2
         }}>
           <IconButton 
             onClick={goToPreviousDay}
@@ -517,7 +523,9 @@ export const ScheduleVerification = () => {
           </IconButton>
         </Box>
 
-        <Box sx={{ mb: 3 }}>
+        {/* Scrollable Content */}
+        <Box sx={{ p: 2, pt: 0 }}>
+          <Box sx={{ mb: 3 }}>
           <Typography 
             variant="h6" 
             textAlign="center" 
@@ -628,7 +636,7 @@ export const ScheduleVerification = () => {
             </Box>
           </Box>
         </Paper>
-      </Box>
-    </Layout>
+        </Box>
+      </Layout>
   );
 };
