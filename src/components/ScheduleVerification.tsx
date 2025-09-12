@@ -590,7 +590,7 @@ export const ScheduleVerification = () => {
             </Box>
             
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography color="text.secondary">Total Hours:</Typography>
+                <Typography color="text.secondary" fontWeight="bold">Total Hours:</Typography>
                 <Typography fontWeight="bold" color="text.primary" variant="h6">16 hours</Typography>
               </Box>
           </Paper>
