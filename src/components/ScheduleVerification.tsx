@@ -449,183 +449,186 @@ export const ScheduleVerification = () => {
   // Show initial time entry interface when no entries exist
   console.log('Showing initial entry interface - no existing entries found');
   return (
-    <Box sx={{ height: '100dvh', display: 'flex', flexDirection: 'column' }}>
-      {/* Date Navigation - Fixed header outside scrolling area */}
-      <Box sx={{ 
-        position: 'fixed',
-        top: 64, // AppBar height
-        left: 0,
-        right: 0,
-        zIndex: 10,
-        bgcolor: 'background.default',
-        borderBottom: 1,
-        borderColor: 'divider',
-        px: 2,
-        py: 2,
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        gap: 1
-      }}>
-        <IconButton 
-          onClick={goToPreviousDay}
-          size="small"
-          sx={{ color: 'text.secondary' }}
-        >
-          <ChevronLeft />
-        </IconButton>
-        
-        <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-          <PopoverTrigger asChild>
-            <Button 
-              variant="text"
-              startIcon={<CalendarToday />}
-              sx={{ 
-                color: 'text.primary',
-                fontWeight: 'normal',
-                textTransform: 'none',
-                bgcolor: 'white'
-              }}
-            >
-              {formatDate(selectedDate)}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent 
-            className="w-auto p-0" 
-            align="center"
-            style={{ backgroundColor: 'white' }}
+    <Layout title="Schedule Verification">
+      <Box sx={{ p: 2 }}>
+        {/* Initial Entry Interface - Only shown when no entries exist */}
+        {/* Date Navigation */}
+        <Box sx={{ 
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          bgcolor: 'background.default',
+          borderBottom: 1,
+          borderColor: 'divider',
+          mx: -2,
+          px: 2,
+          py: 2,
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          gap: 1
+        }}>
+          <IconButton 
+            onClick={goToPreviousDay}
+            size="small"
+            sx={{ color: 'text.secondary' }}
           >
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={(date) => {
-                if (date) {
-                  setSelectedDate(date);
-                  setDatePickerOpen(false);
+            <ChevronLeft />
+          </IconButton>
+          
+          <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="text"
+                startIcon={<CalendarToday />}
+                sx={{ 
+                  color: 'text.primary',
+                  fontWeight: 'normal',
+                  textTransform: 'none'
+                }}
+              >
+                {formatDate(selectedDate)}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-white" align="center">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={(date) => {
+                  if (date) {
+                    setSelectedDate(date);
+                    setDatePickerOpen(false);
+                  }
+                }}
+                initialFocus
+                className={cn("p-3 pointer-events-auto")}
+              />
+            </PopoverContent>
+          </Popover>
+          
+          <IconButton 
+            onClick={goToNextDay}
+            size="small"
+            sx={{ color: 'text.secondary' }}
+          >
+            <ChevronRight />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ mb: 3 }}>
+          <Typography 
+            variant="h6" 
+            textAlign="center" 
+            color="text.primary" 
+            fontWeight="medium"
+            sx={{ mb: 3 }}
+          >
+            Did everyone work their scheduled hours today?
+          </Typography>
+          
+          <Box sx={{ space: 1.5, mb: 3 }}>
+            <Button 
+              variant="contained"
+              size="large"
+              fullWidth
+              startIcon={<CheckCircle />}
+              onClick={handleConfirmSchedule}
+              sx={{ 
+                mb: 1.5,
+                py: 1.5,
+                textTransform: 'none',
+                fontSize: '1rem',
+                backgroundColor: 'primary.main',
+                '&:hover': {
+                  backgroundColor: 'primary.main',
+                  opacity: 0.9
                 }
               }}
-              initialFocus
-            />
-          </PopoverContent>
-        </Popover>
-        
-        <IconButton 
-          onClick={goToNextDay}
-          size="small"
-          sx={{ color: 'text.secondary' }}
-        >
-          <ChevronRight />
-        </IconButton>
-      </Box>
-      
-      <Layout title="Schedule Verification">
-        <Box sx={{ p: 2, pt: 8 }}> {/* Add top padding to account for fixed header */}
-          {/* Initial Entry Interface - Only shown when no entries exist */}
+            >
+              Yes, everyone worked scheduled hours
+            </Button>
+            
+            <Button 
+              variant="outlined"
+              size="large"
+              fullWidth
+              startIcon={<Cancel />}
+              onClick={handleDenySchedule}
+              sx={{ 
+                py: 1.5,
+                textTransform: 'none',
+                fontSize: '1rem'
+              }}
+            >
+              No, need to edit hours
+            </Button>
+          </Box>
+        </Box>
+
+        <Paper sx={{ 
+          bgcolor: 'background.paper', 
+          p: 3, 
+          borderRadius: 2,
+          border: 1,
+          borderColor: 'divider'
+        }}>
+          <Typography variant="h6" fontWeight="semibold" color="text.primary" gutterBottom>
+            Scheduled Hours
+          </Typography>
           
           <Paper sx={{ 
-            bgcolor: 'background.paper', 
-            p: 3, 
-            borderRadius: 2,
-            border: 1,
-            borderColor: 'divider'
+            bgcolor: 'background.default', 
+            p: 2, 
+            mb: 2,
+            borderRadius: 1
           }}>
-            <Typography variant="h6" fontWeight="semibold" color="text.primary" gutterBottom>
-              Scheduled Hours
-            </Typography>
-            
-            <Paper sx={{ 
-              bgcolor: 'background.default', 
-              p: 2, 
-              mb: 2,
-              borderRadius: 1
-            }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography color="text.secondary">Start Time:</Typography>
-                  <Typography fontWeight="medium" color="text.primary">
-                    {crewMembers[0].scheduledStart}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography color="text.secondary">End Time:</Typography>
-                  <Typography fontWeight="medium" color="text.primary">
-                    {crewMembers[0].scheduledEnd}
-                  </Typography>
-                </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography color="text.secondary">Start Time:</Typography>
+                <Typography fontWeight="medium" color="text.primary">
+                  {crewMembers[0].scheduledStart}
+                </Typography>
               </Box>
-              
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography color="text.secondary">End Time:</Typography>
+                <Typography fontWeight="medium" color="text.primary">
+                  {crewMembers[0].scheduledEnd}
+                </Typography>
+              </Box>
+            </Box>
+            
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography color="text.secondary" fontWeight="bold">Total Hours:</Typography>
                 <Typography fontWeight="bold" color="text.primary" variant="h6">16 hours</Typography>
               </Box>
-            </Paper>
-            
-            <Box>
-              <Typography variant="subtitle1" fontWeight="medium" color="text.primary" gutterBottom>
-                Crew Members
-              </Typography>
-              <Box sx={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 1 
-              }}>
-                {crewMembers.map((member) => (
-                  <Chip
-                    key={member.id}
-                    label={member.name}
-                    variant="outlined"
-                    sx={{ 
-                      bgcolor: 'background.default',
-                      justifyContent: 'flex-start'
-                    }}
-                  />
-                ))}
-              </Box>
-            </Box>
           </Paper>
-
-          <Box sx={{ mt: 3, textAlign: 'center' }}>
-            <Typography variant="h6" color="text.primary" gutterBottom>
-              Does this schedule look correct for today?
+          
+          <Box>
+            <Typography variant="subtitle1" fontWeight="medium" color="text.primary" gutterBottom>
+              Crew Members
             </Typography>
-            
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 2 }}>
-              <Button
-                variant="contained"
-                startIcon={<CheckCircle />}
-                onClick={handleConfirmSchedule}
-                sx={{ 
-                  bgcolor: 'success.main',
-                  '&:hover': { bgcolor: 'success.dark' },
-                  textTransform: 'none',
-                  px: 3
-                }}
-              >
-                Yes, Correct
-              </Button>
-              
-              <Button
-                variant="outlined"
-                startIcon={<Edit />}
-                onClick={handleDenySchedule}
-                sx={{ 
-                  borderColor: 'warning.main',
-                  color: 'warning.main',
-                  '&:hover': { 
-                    borderColor: 'warning.dark',
-                    color: 'warning.dark',
-                    bgcolor: 'warning.lighter'
-                  },
-                  textTransform: 'none',
-                  px: 3
-                }}
-              >
-                No, Let me edit
-              </Button>
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(2, 1fr)', 
+              gap: 1 
+            }}>
+              {crewMembers.map((member) => (
+                <Chip
+                  key={member.id}
+                  label={member.name}
+                  variant="outlined"
+                  sx={{ 
+                    bgcolor: 'background.default',
+                    justifyContent: 'flex-start'
+                  }}
+                />
+              ))}
             </Box>
           </Box>
-        </Box>
-      </Layout>
-    </Box>
+        </Paper>
+      </Box>
+    </Layout>
   );
 };
