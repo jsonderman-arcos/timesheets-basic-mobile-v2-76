@@ -547,6 +547,7 @@ export const ScheduleVerification = () => {
               sx={{ 
                 mb: 1.5,
                 py: 1.5,
+                px: 4,
                 textTransform: 'none',
                 fontSize: '1rem'
               }}
