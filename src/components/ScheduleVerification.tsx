@@ -444,6 +444,7 @@ export const ScheduleVerification = () => {
               textTransform: 'none',
               fontSize: '0.95rem',
               borderStyle: 'dashed',
+              justifyContent: 'flex-start',
               '& .MuiButton-startIcon': {
                 marginRight: 1
               },
@@ -553,6 +554,7 @@ export const ScheduleVerification = () => {
                 px: 4,
                 textTransform: 'none',
                 fontSize: '1rem',
+                justifyContent: 'flex-start',
                 '& .MuiButton-startIcon': {
                   marginRight: 1
                 }
@@ -571,6 +573,7 @@ export const ScheduleVerification = () => {
                 py: 1.5,
                 textTransform: 'none',
                 fontSize: '1rem',
+                justifyContent: 'flex-start',
                 '& .MuiButton-startIcon': {
                   marginRight: 1
                 }
