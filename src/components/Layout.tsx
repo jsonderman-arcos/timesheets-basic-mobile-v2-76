@@ -94,7 +94,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           <IconButton 
             edge="end" 
             onClick={() => navigate("/account")}
-            className="text-white"
+            sx={{ color: 'white' }}
           >
             <Person />
           </IconButton>
