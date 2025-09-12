@@ -444,6 +444,9 @@ export const ScheduleVerification = () => {
               textTransform: 'none',
               fontSize: '0.95rem',
               borderStyle: 'dashed',
+              '& .MuiButton-startIcon': {
+                marginRight: 1
+              },
               '&:hover': {
                 borderStyle: 'solid'
               }
@@ -567,7 +570,10 @@ export const ScheduleVerification = () => {
               sx={{ 
                 py: 1.5,
                 textTransform: 'none',
-                fontSize: '1rem'
+                fontSize: '1rem',
+                '& .MuiButton-startIcon': {
+                  marginRight: 1
+                }
               }}
             >
               No, need to edit hours
