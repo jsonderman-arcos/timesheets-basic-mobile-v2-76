@@ -541,18 +541,14 @@ export const ScheduleVerification = () => {
               variant="contained"
               size="large"
               fullWidth
+              color="success"
               startIcon={<CheckCircle />}
               onClick={handleConfirmSchedule}
               sx={{ 
                 mb: 1.5,
                 py: 1.5,
                 textTransform: 'none',
-                fontSize: '1rem',
-                backgroundColor: 'primary.main',
-                '&:hover': {
-                  backgroundColor: 'primary.main',
-                  opacity: 0.9
-                }
+                fontSize: '1rem'
               }}
             >
               Yes, everyone worked scheduled hours
