@@ -454,11 +454,21 @@ export const ScheduleVerification = () => {
         {/* Initial Entry Interface - Only shown when no entries exist */}
         {/* Date Navigation */}
         <Box sx={{ 
+          position: 'sticky',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          bgcolor: 'background.default',
+          borderBottom: 1,
+          borderColor: 'divider',
+          mx: -2,
+          px: 2,
+          py: 2,
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
-          gap: 1, 
-          mb: 3 
+          gap: 1
         }}>
           <IconButton 
             onClick={goToPreviousDay}
