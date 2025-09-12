@@ -138,10 +138,10 @@ export const ScheduleVerification = () => {
 
   // Use real crew member IDs from the database with updated default hours (6am-10pm = 16 hours)
   const crewMembers = [
-    { id: '3751647d-f0ae-4d62-a0a1-9a0bd3dbc2b1', name: 'David Brown', scheduledStart: '6:00 AM', scheduledEnd: '10:00 PM' },
-    { id: '47e34e83-b887-4d79-82a9-ffc1f63f5e17', name: 'John Smith', scheduledStart: '6:00 AM', scheduledEnd: '10:00 PM' },
-    { id: 'c648a699-cf2a-4ac7-bce8-19883a0db42b', name: 'Mike Johnson', scheduledStart: '6:00 AM', scheduledEnd: '10:00 PM' },
-    { id: '54704459-cf20-4137-9f6c-0c58ab8ac8b9', name: 'Sarah Williams', scheduledStart: '6:00 AM', scheduledEnd: '10:00 PM' },
+    { id: '3751647d-f0ae-4d62-a0a1-9a0bd3dbc2b1', name: 'David Brown', scheduledStart: '06:00', scheduledEnd: '22:00' },
+    { id: '47e34e83-b887-4d79-82a9-ffc1f63f5e17', name: 'John Smith', scheduledStart: '06:00', scheduledEnd: '22:00' },
+    { id: 'c648a699-cf2a-4ac7-bce8-19883a0db42b', name: 'Mike Johnson', scheduledStart: '06:00', scheduledEnd: '22:00' },
+    { id: '54704459-cf20-4137-9f6c-0c58ab8ac8b9', name: 'Sarah Williams', scheduledStart: '06:00', scheduledEnd: '22:00' },
   ];
   
   const formatDate = (date: Date) => {
@@ -574,22 +574,18 @@ export const ScheduleVerification = () => {
             mb: 2,
             borderRadius: 1
           }}>
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              <Box sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography color="text.secondary">Start Time:</Typography>
-                  <Typography fontWeight="medium" color="text.primary">
-                    {crewMembers[0].scheduledStart}
-                  </Typography>
-                </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography color="text.secondary">Start Time:</Typography>
+                <Typography fontWeight="medium" color="text.primary">
+                  {crewMembers[0].scheduledStart}
+                </Typography>
               </Box>
-              <Box sx={{ flex: 1 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Typography color="text.secondary">End Time:</Typography>
-                  <Typography fontWeight="medium" color="text.primary">
-                    {crewMembers[0].scheduledEnd}
-                  </Typography>
-                </Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Typography color="text.secondary">End Time:</Typography>
+                <Typography fontWeight="medium" color="text.primary">
+                  {crewMembers[0].scheduledEnd}
+                </Typography>
               </Box>
             </Box>
             
