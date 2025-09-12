@@ -549,7 +549,10 @@ export const ScheduleVerification = () => {
                 py: 1.5,
                 px: 4,
                 textTransform: 'none',
-                fontSize: '1rem'
+                fontSize: '1rem',
+                '& .MuiButton-startIcon': {
+                  marginRight: 1
+                }
               }}
             >
               Yes, everyone worked scheduled hours
