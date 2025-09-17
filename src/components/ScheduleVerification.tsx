@@ -256,17 +256,6 @@ export const ScheduleVerification = () => {
     }, 500);
   };
 
-  const handleCloseSuccess = useCallback(async () => {
-    if (crewId) {
-      setLoading(true);
-      await checkExistingTimeEntries(crewId);
-    }
-
-    setIsCompleted(false);
-    setShowTimeEntry(false);
-    navigate('/', { replace: true });
-  }, [checkExistingTimeEntries, crewId, navigate]);
-
   if (isCompleted) {
     return (
       <Layout title="Schedule Verification">
@@ -292,15 +281,6 @@ export const ScheduleVerification = () => {
               <Typography sx={{ color: 'var(--theme-base-text-secondary)' }}>
                 Your work hours have been recorded. Thank you for updating your schedule.
               </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                fullWidth
-                sx={{ mt: 3 }}
-                onClick={handleCloseSuccess}
-              >
-                Close
-              </Button>
             </CardContent>
           </Card>
         </Box>
@@ -665,20 +645,18 @@ export const ScheduleVerification = () => {
           </Typography>
           
           <Box sx={{ space: 1.5, mb: 3 }}>
-            {!hasTimeEntries && (
-              <Button 
-                variant="contained"
-                size="large"
-                fullWidth
-                color="success"
-                startIcon={<CheckCircle />}
-                onClick={handleConfirmSchedule}
-                sx={{ mb: 3, p:2 }}
-                disabled={isBusy}
-              >
-                Correct. Submit the hours.
-              </Button>
-            )}
+            <Button 
+              variant="contained"
+              size="large"
+              fullWidth
+              color="success"
+              startIcon={<CheckCircle />}
+              onClick={handleConfirmSchedule}
+              sx={{ mb: 3, p:2 }}
+              disabled={isBusy}
+            >
+              Correct. Submit the hours.
+            </Button>
             
             <Button 
               variant="outlined"
