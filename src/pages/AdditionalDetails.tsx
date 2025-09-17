@@ -114,128 +114,187 @@ const AdditionalDetails = () => {
       const dateForEntries = selectedDateKey;
       const trimmedNotes = notes.trim();
       const breakdownInserts: any[] = [];
-      const timeEntryMap: Record<string, string> = {};
+      const timeEntryIdByMember: Record<string, string> = {};
+      const memberHoursMap = new Map(memberHours.map((member) => [member.memberId, member.hours]));
+      const memberIds = memberHours.map((member) => member.memberId);
+
+      const { data: existingEntries, error: existingEntriesError } = await supabase
+        .from('time_entries')
+        .select('id, member_id')
+        .eq('date', dateForEntries)
+        .eq('crew_id', crewId)
+        .in('member_id', memberIds);
+
+      if (existingEntriesError) {
+        console.error('Error fetching existing time entries:', existingEntriesError);
+        toast.error('Failed to load existing time entries. Please try again.');
+        return;
+      }
+
+      const existingEntryMap = new Map<string, string>(
+        (existingEntries ?? []).map((entry) => [entry.member_id, entry.id])
+      );
+
+      const groupWorking = parseFloat(totalWorkingHours || '0');
+      const groupTraveling = parseFloat(totalTravelingHours || '0');
+      const groupStandby = parseFloat(totalStandbyHours || '0');
+      const groupHasInput = !editedIndividually && (groupWorking > 0 || groupTraveling > 0 || groupStandby > 0);
 
       for (const member of memberHours) {
-        const { data: existingEntries, error: existingError } = await supabase
-          .from('time_entries')
-          .select('id')
-          .eq('member_id', member.memberId)
-          .eq('date', dateForEntries)
-          .eq('crew_id', crewId)
-          .limit(1);
+        const memberId = member.memberId;
+        const scheduledHours = memberHoursMap.get(memberId) ?? 0;
 
-        if (existingError) {
-          console.error('Error locating time entry:', existingError);
-          toast.error('Failed to locate time entries. Please try again.');
-          return;
+        let workingInput = 0;
+        let travelingInput = 0;
+        let standbyInput = 0;
+
+        if (editedIndividually) {
+          const breakdown = memberBreakdowns[memberId] || { workingHours: '0', travelingHours: '0', standbyHours: '0' };
+          workingInput = parseFloat(breakdown.workingHours || '0');
+          travelingInput = parseFloat(breakdown.travelingHours || '0');
+          standbyInput = parseFloat(breakdown.standbyHours || '0');
         }
 
-        const existingEntry = existingEntries?.[0];
+        const hasIndividualInput = editedIndividually && (workingInput > 0 || travelingInput > 0 || standbyInput > 0);
 
-        if (existingEntry) {
-          timeEntryMap[member.memberId] = existingEntry.id;
+        let working = editedIndividually ? workingInput : groupWorking;
+        let traveling = editedIndividually ? travelingInput : groupTraveling;
+        let standby = editedIndividually ? standbyInput : groupStandby;
+
+        const hasInput = editedIndividually ? hasIndividualInput : groupHasInput;
+
+        if (!hasInput) {
+          working = scheduledHours;
+          traveling = 0;
+          standby = 0;
+        }
+
+        const totalMemberHours = working + traveling + standby;
+        const endTime = computeEndTimeFromHours(DEFAULT_START_TIME, totalMemberHours);
+
+        const entryId = existingEntryMap.get(memberId);
+
+        const timeEntryUpdate = {
+          start_time: DEFAULT_START_TIME,
+          end_time: endTime,
+          working_hours: working,
+          traveling_hours: traveling,
+          standby_hours: standby,
+          hours_regular: totalMemberHours,
+          status: 'submitted',
+          comments: trimmedNotes || null,
+          submitted_by: crewId,
+          submitted_at: new Date().toISOString(),
+        };
+
+        if (entryId) {
+          const { error: updateError } = await supabase
+            .from('time_entries')
+            .update(timeEntryUpdate)
+            .eq('id', entryId);
+
+          if (updateError) {
+            console.error('Error updating time entry:', updateError);
+            toast.error('Failed to update time entries. Please try again.');
+            return;
+          }
+
+          timeEntryIdByMember[memberId] = entryId;
         } else {
-          const endTime = computeEndTimeFromHours(DEFAULT_START_TIME, member.hours);
-          const { data: createdEntry, error: createError } = await supabase
+          const { data: insertedEntry, error: insertError } = await supabase
             .from('time_entries')
             .insert({
               crew_id: crewId,
-              member_id: member.memberId,
+              member_id: memberId,
               date: dateForEntries,
-              start_time: DEFAULT_START_TIME,
-              end_time: endTime,
-              hours_regular: member.hours,
-              status: 'submitted',
-              comments: trimmedNotes || null,
-              submitted_by: crewId,
-              submitted_at: new Date().toISOString()
+              ...timeEntryUpdate,
             })
             .select('id')
             .single();
 
-          if (createError || !createdEntry) {
-            console.error('Error creating time entry:', createError);
+          if (insertError || !insertedEntry) {
+            console.error('Error creating time entry:', insertError);
             toast.error('Failed to create time entries. Please try again.');
             return;
           }
 
-          timeEntryMap[member.memberId] = createdEntry.id;
+          timeEntryIdByMember[memberId] = insertedEntry.id;
+        }
+
+        if (editedIndividually) {
+          if (hasIndividualInput) {
+            if (workingInput > 0) {
+              breakdownInserts.push({
+                time_entry_id: timeEntryIdByMember[memberId],
+                member_id: memberId,
+                breakdown_type: 'working',
+                hours: workingInput,
+                description: trimmedNotes || null,
+              });
+            }
+            if (travelingInput > 0) {
+              breakdownInserts.push({
+                time_entry_id: timeEntryIdByMember[memberId],
+                member_id: memberId,
+                breakdown_type: 'traveling',
+                hours: travelingInput,
+                description: trimmedNotes || null,
+              });
+            }
+            if (standbyInput > 0) {
+              breakdownInserts.push({
+                time_entry_id: timeEntryIdByMember[memberId],
+                member_id: memberId,
+                breakdown_type: 'standby',
+                hours: standbyInput,
+                description: trimmedNotes || null,
+              });
+            }
+          }
+        } else if (groupHasInput) {
+          if (groupWorking > 0) {
+            breakdownInserts.push({
+              time_entry_id: timeEntryIdByMember[memberId],
+              member_id: memberId,
+              breakdown_type: 'working',
+              hours: groupWorking,
+              description: trimmedNotes || null,
+            });
+          }
+          if (groupTraveling > 0) {
+            breakdownInserts.push({
+              time_entry_id: timeEntryIdByMember[memberId],
+              member_id: memberId,
+              breakdown_type: 'traveling',
+              hours: groupTraveling,
+              description: trimmedNotes || null,
+            });
+          }
+          if (groupStandby > 0) {
+            breakdownInserts.push({
+              time_entry_id: timeEntryIdByMember[memberId],
+              member_id: memberId,
+              breakdown_type: 'standby',
+              hours: groupStandby,
+              description: trimmedNotes || null,
+            });
+          }
         }
       }
 
-      if (editedIndividually) {
-        for (const member of memberHours) {
-          const breakdown = memberBreakdowns[member.memberId] || { workingHours: '0', travelingHours: '0', standbyHours: '0' };
-          const timeEntryId = timeEntryMap[member.memberId];
-          const working = parseFloat(breakdown.workingHours || '0');
-          const traveling = parseFloat(breakdown.travelingHours || '0');
-          const standby = parseFloat(breakdown.standbyHours || '0');
+      const timeEntryIds = Object.values(timeEntryIdByMember);
 
-          if (working > 0) {
-            breakdownInserts.push({
-              time_entry_id: timeEntryId,
-              member_id: member.memberId,
-              breakdown_type: 'working',
-              hours: working,
-              description: trimmedNotes || null
-            });
-          }
-          if (traveling > 0) {
-            breakdownInserts.push({
-              time_entry_id: timeEntryId,
-              member_id: member.memberId,
-              breakdown_type: 'traveling',
-              hours: traveling,
-              description: trimmedNotes || null
-            });
-          }
-          if (standby > 0) {
-            breakdownInserts.push({
-              time_entry_id: timeEntryId,
-              member_id: member.memberId,
-              breakdown_type: 'standby',
-              hours: standby,
-              description: trimmedNotes || null
-            });
-          }
+      if (timeEntryIds.length > 0) {
+        const { error: deleteBreakdownError } = await supabase
+          .from('hours_breakdown')
+          .delete()
+          .in('time_entry_id', timeEntryIds);
+
+        if (deleteBreakdownError) {
+          console.error('Error clearing previous hours breakdown:', deleteBreakdownError);
+          toast.error('Failed to replace hours breakdown. Please try again.');
+          return;
         }
-      } else {
-        const working = parseFloat(totalWorkingHours || '0');
-        const traveling = parseFloat(totalTravelingHours || '0');
-        const standby = parseFloat(totalStandbyHours || '0');
-
-        memberHours.forEach((member) => {
-          const timeEntryId = timeEntryMap[member.memberId];
-
-          if (working > 0) {
-            breakdownInserts.push({
-              time_entry_id: timeEntryId,
-              member_id: member.memberId,
-              breakdown_type: 'working',
-              hours: working,
-              description: trimmedNotes || null
-            });
-          }
-          if (traveling > 0) {
-            breakdownInserts.push({
-              time_entry_id: timeEntryId,
-              member_id: member.memberId,
-              breakdown_type: 'traveling',
-              hours: traveling,
-              description: trimmedNotes || null
-            });
-          }
-          if (standby > 0) {
-            breakdownInserts.push({
-              time_entry_id: timeEntryId,
-              member_id: member.memberId,
-              breakdown_type: 'standby',
-              hours: standby,
-              description: trimmedNotes || null
-            });
-          }
-        });
       }
 
       if (breakdownInserts.length > 0) {
@@ -248,20 +307,6 @@ const AdditionalDetails = () => {
           toast.error('Failed to save hours breakdown. Please try again.');
           return;
         }
-      }
-
-      const memberIds = memberHours.map((member) => member.memberId);
-      const { error: notesError } = await supabase
-        .from('time_entries')
-        .update({ comments: trimmedNotes || null })
-        .eq('date', dateForEntries)
-        .eq('crew_id', crewId)
-        .in('member_id', memberIds);
-
-      if (notesError) {
-        console.error('Error updating time entry notes:', notesError);
-        toast.error('Failed to update time entry notes. Please try again.');
-        return;
       }
 
       toast.success("Details submitted successfully!");
@@ -349,3 +394,233 @@ const AdditionalDetails = () => {
                           {getCrewMemberName(member.memberId)} - {member.hours.toFixed(1)} hours
                         </Typography>
                         <Typography
+                          variant="body2"
+                          sx={{ mb: 2, color: 'var(--theme-base-text-secondary)' }}
+                        >
+                          Categorized: {getMemberTotalCategorized(member.memberId).toFixed(1)} | Remaining: {getMemberRemainingHours(member).toFixed(1)}
+                        </Typography>
+                        {isMemberOverLimit(member) && (
+                          <Alert severity="error" sx={{ mb: 2 }}>
+                            Categories exceed logged hours by {(getMemberTotalCategorized(member.memberId) - member.hours).toFixed(1)} hours
+                          </Alert>
+                        )}
+
+                        <Typography variant="body2" color="text.primary" gutterBottom>
+                          Hours Breakdown
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{ display: 'block', mb: 2, color: 'var(--theme-base-text-secondary)' }}
+                        >
+                          Optional - Cannot exceed {member.hours.toFixed(1)} logged hours
+                        </Typography>
+                        
+                        <Box sx={{ display: 'flex', gap: 2 }}>
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" color="text.primary" gutterBottom>
+                              Working
+                            </Typography>
+                            <TextField
+                              fullWidth
+                              type="text"
+                              placeholder="0"
+                              variant="outlined"
+                              size="small"
+                              value={memberBreakdowns[member.memberId]?.workingHours || ''}
+                              onChange={(e) => updateMemberBreakdown(member.memberId, 'workingHours', e.target.value)}
+                              error={isMemberOverLimit(member)}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  bgcolor: 'background.default',
+                                }
+                              }}
+                            />
+                          </Box>
+                          
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" color="text.primary" gutterBottom>
+                              Traveling
+                            </Typography>
+                            <TextField
+                              fullWidth
+                              type="text"
+                              placeholder="0"
+                              variant="outlined"
+                              size="small"
+                              value={memberBreakdowns[member.memberId]?.travelingHours || ''}
+                              onChange={(e) => updateMemberBreakdown(member.memberId, 'travelingHours', e.target.value)}
+                              error={isMemberOverLimit(member)}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  bgcolor: 'background.default',
+                                }
+                              }}
+                            />
+                          </Box>
+                          
+                          <Box sx={{ flex: 1 }}>
+                            <Typography variant="body2" color="text.primary" gutterBottom>
+                              Standby
+                            </Typography>
+                            <TextField
+                              fullWidth
+                              type="text"
+                              placeholder="0"
+                              variant="outlined"
+                              size="small"
+                              value={memberBreakdowns[member.memberId]?.standbyHours || ''}
+                              onChange={(e) => updateMemberBreakdown(member.memberId, 'standbyHours', e.target.value)}
+                              error={isMemberOverLimit(member)}
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  bgcolor: 'background.default',
+                                }
+                              }}
+                            />
+                          </Box>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  ))
+                ) : (
+                  <Alert severity="info">No crew members available.</Alert>
+                )}
+              </Box>
+            ) : (
+              <>
+                <Box sx={{ mb: 3 }}>
+                  <Typography variant="body2" color="text.primary" gutterBottom>
+                    Total Hours Breakdown
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ display: 'block', mb: 2, color: 'var(--theme-base-text-secondary)' }}
+                  >
+                    Optional - Cannot exceed {totalHours.toFixed(1)} total hours
+                  </Typography>
+                  
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2" color="text.primary" gutterBottom>
+                        Working
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        type="text"
+                        placeholder="0"
+                        variant="outlined"
+                        size="small"
+                        value={totalWorkingHours}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9.]/g, '');
+                          setTotalWorkingHours(value);
+                        }}
+                        error={isOverLimit}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            bgcolor: 'background.default',
+                          }
+                        }}
+                      />
+                    </Box>
+                    
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2" color="text.primary" gutterBottom>
+                        Traveling
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        type="text"
+                        placeholder="0"
+                        variant="outlined"
+                        size="small"
+                        value={totalTravelingHours}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9.]/g, '');
+                          setTotalTravelingHours(value);
+                        }}
+                        error={isOverLimit}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            bgcolor: 'background.default',
+                          }
+                        }}
+                      />
+                    </Box>
+                    
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2" color="text.primary" gutterBottom>
+                        Standby
+                      </Typography>
+                      <TextField
+                        fullWidth
+                        type="text"
+                        placeholder="0"
+                        variant="outlined"
+                        size="small"
+                        value={totalStandbyHours}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/[^0-9.]/g, '');
+                          setTotalStandbyHours(value);
+                        }}
+                        error={isOverLimit}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            bgcolor: 'background.default',
+                          }
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+
+                <Alert severity={isOverLimit ? 'error' : 'info'} sx={{ mb: 3 }}>
+                  {isOverLimit
+                    ? `Categories exceed total logged hours by ${(getTotalCategorized() - totalHours).toFixed(1)} hours`
+                    : `Remaining hours to categorize: ${getRemainingHours().toFixed(1)}`}
+                </Alert>
+              </>
+            )}
+
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="body2" color="text.primary" gutterBottom>
+                Notes
+              </Typography>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                placeholder="Enter any notes or additional details here..."
+                variant="outlined"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: 'background.default',
+                  }
+                }}
+              />
+            </Box>
+
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleSubmit}
+              size="large"
+              sx={{ 
+                mt: 2,
+                py: 1.5,
+                textTransform: 'none',
+                fontSize: '1rem'
+              }}
+            >
+              Submit
+            </Button>
+          </CardContent>
+        </Card>
+      </Box>
+    </Layout>
+  );
+};
+
+export default AdditionalDetails;

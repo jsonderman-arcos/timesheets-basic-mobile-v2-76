@@ -169,6 +169,12 @@ export const ScheduleVerification = () => {
       day: 'numeric' 
     });
   };
+  const formatShortDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {  
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
 
   const goToPreviousDay = () => {
     const previousDay = new Date(selectedDate);
@@ -472,8 +478,11 @@ export const ScheduleVerification = () => {
             >
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <CheckCircle sx={{ color: 'success.main' }} />
-                <Typography variant="h5" fontWeight="semibold" color="text.primary">
-                  Today's Time Tracking Complete
+                <Typography variant="h5" fontWeight="semibold" color="text.primary" align='center'>
+                  Time Tracking Complete for{' '}
+                  <Box component="span" fontWeight="bold">
+                    {formatShortDate(selectedDate)}
+                  </Box>
                 </Typography>
               </Box>
               
@@ -609,7 +618,7 @@ export const ScheduleVerification = () => {
             }}
             disabled={isBusy}
           >
-            Need to update today's hours?
+            Need to update this day's hours?
           </Button>
         </Box>
       </Layout>
@@ -723,7 +732,7 @@ export const ScheduleVerification = () => {
             fontWeight="medium"
             sx={{ mb: 3 }}
           >
-            Did everyone work their scheduled hours today?
+            Did everyone work their scheduled hours?
           </Typography>
           
           <Box sx={{ space: 1.5, mb: 3 }}>
