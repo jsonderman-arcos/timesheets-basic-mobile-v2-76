@@ -19,4 +19,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        // Suppress warnings about missing optional dependencies
+        if (warning.code === 'MODULE_NOT_FOUND' && warning.message.includes('@rollup/rollup-linux-x64-gnu')) {
+          return;
+        }
+        warn(warning);
+      }
+    }
+  }
 }));
