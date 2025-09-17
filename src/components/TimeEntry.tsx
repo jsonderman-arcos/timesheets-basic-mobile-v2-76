@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import {
   Card,
   CardContent,
@@ -6,8 +6,7 @@ import {
   Button,
   Box,
   Switch,
-  FormControlLabel,
-  TextField
+  FormControlLabel
 } from '@mui/material';
 import { Save } from '@mui/icons-material';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -74,13 +73,14 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
 
   const [timeEntries, setTimeEntries] = useState<Record<string, { startTime: string; endTime: string }>>({});
   const [loading, setLoading] = useState(true);
+  const [hasExistingData, setHasExistingData] = useState(false);
+  const [notes, setNotes] = useState('');
 
   const [editIndividually, setEditIndividually] = useState(false);
   const [groupTimes, setGroupTimes] = useState<{ startTime: string; endTime: string }>({
     startTime: DEFAULT_SHIFT_START,
     endTime: DEFAULT_SHIFT_END,
   });
-  const [notes, setNotes] = useState('');
 
   const buildDefaultEntries = () => crewMembers.reduce((acc, member) => {
     acc[member.id] = {
@@ -90,13 +90,13 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
     return acc;
   }, {} as Record<string, { startTime: string; endTime: string }>);
 
-  // Load existing time entries or initialize with scheduled times
   useEffect(() => {
     const loadTimeEntries = async () => {
       setLoading(true);
 
       if (crewMembers.length === 0) {
         setTimeEntries({});
+        setHasExistingData(false);
         setNotes('');
         setLoading(false);
         return;
@@ -112,6 +112,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
             endTime: firstMemberEntry.endTime,
           });
         }
+        setHasExistingData(false);
         setNotes('');
         setLoading(false);
         return;
@@ -132,6 +133,8 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
 
         const entriesMap = buildDefaultEntries();
         let loadedNotes = '';
+        const hasData = !!existingEntries && existingEntries.length > 0;
+        setHasExistingData(hasData);
 
         crewMembers.forEach((member) => {
           const existingEntry = existingEntries?.find((entry) => entry.member_id === member.id);
@@ -162,6 +165,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
         console.error('Error in loadTimeEntries:', error);
         const fallbackEntries = buildDefaultEntries();
         setTimeEntries(fallbackEntries);
+        setHasExistingData(false);
         setNotes('');
       } finally {
         setLoading(false);
@@ -172,26 +176,29 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
   }, [selectedDate, crewMembers, crewId]);
 
   const updateTimeEntry = (memberId: string, field: 'startTime' | 'endTime', value: string) => {
-    setTimeEntries(prev => ({
+    setTimeEntries((prev) => ({
       ...prev,
       [memberId]: {
         ...prev[memberId],
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
   const updateAllEntries = (field: 'startTime' | 'endTime', value: string) => {
-    setGroupTimes(prev => ({ ...prev, [field]: value }));
-    
-    const updatedEntries: Record<string, { startTime: string; endTime: string }> = {};
-    crewMembers.forEach(member => {
-      updatedEntries[member.id] = {
-        ...timeEntries[member.id],
-        [field]: value
-      };
+    setGroupTimes((prev) => ({ ...prev, [field]: value }));
+
+    setTimeEntries((prev) => {
+      const updated: Record<string, { startTime: string; endTime: string }> = {};
+      crewMembers.forEach((member) => {
+        const existing = prev[member.id] ?? { startTime: value, endTime: value };
+        updated[member.id] = {
+          ...existing,
+          [field]: value,
+        };
+      });
+      return updated;
     });
-    setTimeEntries(updatedEntries);
   };
 
   const parseTimeStringToDate = (time: string) => {
@@ -208,7 +215,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
   };
 
   const formatPickerValue = (value: Date | null) => {
-    if (!value) {
+    if (!value || typeof value.getTime !== 'function' || Number.isNaN(value.getTime())) {
       return '';
     }
 
@@ -221,14 +228,13 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
 
   const calculateHours = (start: string, end: string) => {
     if (!start || !end) return 0;
-    const startMinutes = parseInt(start.split(':')[0]) * 60 + parseInt(start.split(':')[1]);
-    const endMinutes = parseInt(end.split(':')[0]) * 60 + parseInt(end.split(':')[1]);
+    const startMinutes = parseInt(start.split(':')[0], 10) * 60 + parseInt(start.split(':')[1], 10);
+    const endMinutes = parseInt(end.split(':')[0], 10) * 60 + parseInt(end.split(':')[1], 10);
     return Math.max(0, (endMinutes - startMinutes) / 60);
   };
 
   const handleSubmit = async () => {
-    // Validate all entries
-    const allValid = crewMembers.every(member => {
+    const allValid = crewMembers.every((member) => {
       const entry = timeEntries[member.id];
       return entry && entry.startTime && entry.endTime && entry.startTime < entry.endTime;
     });
@@ -245,8 +251,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
 
     try {
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
-
-      const memberIds = crewMembers.map(member => member.id);
+      const memberIds = crewMembers.map((member) => member.id);
 
       if (memberIds.length > 0) {
         const { error: deleteError } = await supabase
@@ -263,8 +268,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
         }
       }
 
-      // Prepare member hours data with real crew member IDs
-      const memberHours = crewMembers.map(member => {
+      const memberHours = crewMembers.map((member) => {
         const entry = timeEntries[member.id];
         if (!entry) {
           throw new Error(`No time entry found for member ${member.name}`);
@@ -274,23 +278,22 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
           memberId: member.id,
           hours,
           startTime: entry.startTime,
-          endTime: entry.endTime
+          endTime: entry.endTime,
         };
       });
 
       const trimmedNotes = notes.trim();
 
-      // Save to database using the real crew_id
-      const timeEntryInserts = memberHours.map(memberData => ({
+      const timeEntryInserts = memberHours.map((memberData) => ({
         date: dateStr,
         start_time: memberData.startTime,
         end_time: memberData.endTime,
         hours_regular: memberData.hours,
         crew_id: crewId,
-        member_id: memberData.memberId, // Use the real member_id
+        member_id: memberData.memberId,
         status: 'submitted',
         submitted_at: new Date().toISOString(),
-        comments: trimmedNotes || null
+        comments: trimmedNotes || null,
       }));
 
       const { error } = await supabase
@@ -304,8 +307,9 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
       }
 
       toast.success('Time entries saved successfully!');
+      setHasExistingData(true);
       onSubmit(
-        memberHours.map(m => ({ memberId: m.memberId, hours: m.hours })),
+        memberHours.map((m) => ({ memberId: m.memberId, hours: m.hours })),
         editIndividually,
         trimmedNotes
       );
@@ -315,7 +319,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
     }
   };
 
-  const allEntriesValid = crewMembers.every(member => {
+  const allEntriesValid = crewMembers.every((member) => {
     const entry = timeEntries[member.id];
     return entry && entry.startTime && entry.endTime && entry.startTime < entry.endTime;
   });
@@ -349,43 +353,51 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
           borderRadius: 2,
         }}
       >
-
-            <Typography variant="h6" gutterBottom>
-              {selectedDate.toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
+        <Typography variant="h6" gutterBottom>
+          {selectedDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+          {hasExistingData && (
+            <Typography variant="subtitle2" sx={{ color: 'var(--theme-base-text-secondary)', fontWeight: 'normal' }}>
+              Submitted Hours
             </Typography>
-            
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={editIndividually}
-                  onChange={(e) => setEditIndividually(e.target.checked)}
-                  sx={{
-                    '& .MuiSwitch-thumb': {
-                      backgroundColor: 'var(--core-lighthouse-colors-neutrals-gray-300)'
-                    },
-                    '& .MuiSwitch-track': {
-                      backgroundColor: 'var(--theme-base-text-default)',
-                      opacity: 0.4
-                    },
-                    '&.Mui-checked .MuiSwitch-thumb': {
-                      backgroundColor: 'var(--core-lighthouse-colors-neutrals-gray-300)'
-                    },
-                    '&.Mui-checked .MuiSwitch-track': {
-                      backgroundColor: 'var(--theme-base-text-default)',
-                      opacity: 0.6
-                    }
-                  }}
-                />
-              }
-              label="Edit individual times"
-              sx={{ mb: 2 }}
-            />
+          )}
+          {!hasExistingData && (
+            <Typography variant="subtitle2" sx={{ color: 'var(--theme-base-text-secondary)', fontWeight: 'normal' }}>
+              Scheduled Hours
+            </Typography>
+          )}
+        </Typography>
 
+        <FormControlLabel
+          control={
+            <Switch
+              checked={editIndividually}
+              onChange={(event) => setEditIndividually(event.target.checked)}
+              sx={{
+                '& .MuiSwitch-thumb': {
+                  backgroundColor: 'var(--core-lighthouse-colors-neutrals-gray-300)',
+                },
+                '& .MuiSwitch-track': {
+                  backgroundColor: 'var(--theme-base-text-default)',
+                  opacity: 0.4,
+                },
+                '&.Mui-checked .MuiSwitch-thumb': {
+                  backgroundColor: 'var(--core-lighthouse-colors-neutrals-gray-300)',
+                },
+                '&.Mui-checked .MuiSwitch-track': {
+                  backgroundColor: 'var(--theme-base-text-default)',
+                  opacity: 0.6,
+                },
+              }}
+            />
+          }
+          label="Edit individual times"
+          sx={{ mb: 2 }}
+        />
 
         {!editIndividually ? (
           <Card sx={{ mb: 2, bgcolor: 'background.paper' }}>
@@ -403,8 +415,8 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      InputLabelProps: { shrink: true }
-                    }
+                      InputLabelProps: { shrink: true },
+                    },
                   }}
                 />
                 <TimePicker
@@ -416,14 +428,14 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
                   slotProps={{
                     textField: {
                       fullWidth: true,
-                      InputLabelProps: { shrink: true }
-                    }
+                      InputLabelProps: { shrink: true },
+                    },
                   }}
                 />
               </Box>
-          <Typography variant="body2" sx={{ color: 'var(--theme-base-text-secondary)' }}>
-            Hours: {calculateHours(groupTimes.startTime, groupTimes.endTime).toFixed(1)} per person
-          </Typography>
+              <Typography variant="body2" sx={{ color: 'var(--theme-base-text-secondary)' }}>
+                Hours: {calculateHours(groupTimes.startTime, groupTimes.endTime).toFixed(1)} per person
+              </Typography>
             </CardContent>
           </Card>
         ) : (
@@ -445,8 +457,8 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
                         textField: {
                           fullWidth: true,
                           size: 'small',
-                          InputLabelProps: { shrink: true }
-                        }
+                          InputLabelProps: { shrink: true },
+                        },
                       }}
                     />
                     <TimePicker
@@ -459,8 +471,8 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
                         textField: {
                           fullWidth: true,
                           size: 'small',
-                          InputLabelProps: { shrink: true }
-                        }
+                          InputLabelProps: { shrink: true },
+                        },
                       }}
                     />
                   </Box>
@@ -479,16 +491,34 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
           </Box>
         )}
 
-        <TextField
-          label="Notes"
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          fullWidth
-          multiline
-          minRows={3}
-          placeholder="Add any notes about today's hours"
-          sx={{ mt: 3 }}
-        />
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Notes
+          </Typography>
+          <Box
+            component="textarea"
+            value={notes}
+            onChange={(event: ChangeEvent<HTMLTextAreaElement>) => setNotes(event.target.value)}
+            placeholder="Add any notes about this timesheet..."
+            sx={{
+              width: '100%',
+              minHeight: '80px',
+              p: 1.5,
+              border: '1px solid',
+              borderColor: 'var(--theme-base-border-default)',
+              borderRadius: 1,
+              bgcolor: 'background.paper',
+              color: 'var(--theme-base-text-default)',
+              fontFamily: 'inherit',
+              fontSize: '14px',
+              resize: 'vertical',
+              '&:focus': {
+                outline: 'none',
+                borderColor: 'var(--theme-base-border-focused)',
+              },
+            }}
+          />
+        </Box>
 
         <Button
           variant="contained"
@@ -497,13 +527,13 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
           onClick={handleSubmit}
           disabled={!allEntriesValid}
           size="large"
-          sx={{ 
+          sx={{
             mt: 2,
             py: 1.5,
-            textTransform: 'none'
+            textTransform: 'none',
           }}
         >
-          Save Time Entries
+          {hasExistingData ? 'Update Time Entries' : 'Save Time Entries'}
         </Button>
       </Box>
     </Layout>
