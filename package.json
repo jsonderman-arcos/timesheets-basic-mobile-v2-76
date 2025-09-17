@@ -23,6 +23,7 @@
     "@mui/x-date-pickers": "^7.3.0",
     "@supabase/supabase-js": "^2.56.0",
     "@tanstack/react-query": "^5.83.0",
+    "arcos-harmony-design-system": "https://github.com/jsonderman-arcos/arcos-harmony-design-system",
     "date-fns": "^3.6.0",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
