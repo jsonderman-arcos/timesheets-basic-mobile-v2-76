@@ -43,10 +43,16 @@ const Account = () => {
 
   return (
     <Layout title="Account" onBack={handleBack}>
-      <Box sx={{ p: 3 }}>
-        {/* Profile Header */}
-        <Card sx={{ mb: 3 }}>
-          <CardContent sx={{ textAlign: 'center', py: 4 }}>
+      <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
+        <Box sx={{ pb: 4 }}>
+          {/* Profile Header */}
+          <Card
+            sx={{
+              mb: 3,
+              bgcolor: 'var(--theme-base-background-elevations-level-3)'
+            }}
+          >
+            <CardContent sx={{ textAlign: 'center', py: 4 }}>
             <Avatar 
               sx={{ 
                 width: 80, 
@@ -84,40 +90,47 @@ const Account = () => {
             >
               Member ID: {loggedInMember?.id ?? 'N/A'}
             </Typography>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        {/* Account Menu */}
-        <Card>
-          <CardContent sx={{ p: 0 }}>
-            <List>
-              {accountMenuItems.map((item, index) => (
-                <React.Fragment key={index}>
-                  <ListItem 
-                    component="button" 
-                    onClick={item.action}
-                    sx={{
-                      py: 2,
-                      cursor: 'pointer',
-                      '&:hover': {
-                        bgcolor: 'action.hover'
-                      }
-                    }}
-                  >
-                    <ListItemIcon sx={{ color: 'primary.main' }}>
-                      {item.icon}
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={item.text}
-                      primaryTypographyProps={{ fontWeight: 500 }}
-                    />
-                  </ListItem>
-                  {index < accountMenuItems.length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
-            </List>
-          </CardContent>
-        </Card>
+          {/* Account Menu */}
+          <Card sx={{
+            bgcolor: 'var(--theme-base-background-elevations-level-3)',
+              border: '0',
+              p:0
+          }}>
+            <CardContent sx={{ p: 0,
+              
+             }}>
+              <List>
+                {accountMenuItems.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <ListItem 
+                      component="button" 
+                      onClick={item.action}
+                      sx={{
+                        py: 2,
+                        cursor: 'pointer',
+                        '&:hover': {
+                          bgcolor: 'action.hover'
+                        }
+                      }}
+                    >
+                      <ListItemIcon sx={{ color: 'primary.main' }}>
+                        {item.icon}
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={item.text}
+                        primaryTypographyProps={{ fontWeight: 500 }}
+                      />
+                    </ListItem>
+                    {index < accountMenuItems.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Box>
       </Box>
     </Layout>
   );
