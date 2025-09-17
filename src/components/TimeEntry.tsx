@@ -195,9 +195,14 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
   };
 
   const formatPickerValue = (value: Date | null) => {
-    if (!value || !isValid(value)) {
+    if (!value) {
       return '';
     }
+
+    if (!isValid(value)) {
+      return '';
+    }
+
     return format(value, 'HH:mm');
   };
 
@@ -270,7 +275,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
     }
   };
 
-  const isValid = crewMembers.every(member => {
+  const allEntriesValid = crewMembers.every(member => {
     const entry = timeEntries[member.id];
     return entry && entry.startTime && entry.endTime && entry.startTime < entry.endTime;
   });
@@ -439,7 +444,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
           fullWidth
           startIcon={<Save />}
           onClick={handleSubmit}
-          disabled={!isValid}
+          disabled={!allEntriesValid}
           size="large"
           sx={{ 
             mt: 2,
