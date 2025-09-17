@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  TextField, 
-  Button, 
-  Box, 
+import {
+  Typography,
+  TextField,
+  Button,
+  Box,
   Alert,
   FormControlLabel,
   Switch
@@ -365,140 +363,57 @@ const AdditionalDetails = () => {
         <link rel="canonical" href="/additional-details" />
       </Helmet>
 
-      <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', minHeight: '100%' }}>
-        <Card sx={{ 
-          width: '100%', 
-          maxWidth: 400,
-          bgcolor: 'background.paper',
-          boxShadow: 3
-        }}>
-          <CardContent sx={{ p: 3 }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={editedIndividually}
-                  onChange={(e) => setEditedIndividually(e.target.checked)}
-                />
-              }
-              label="Edit individual times"
-              sx={{ mb: 2 }}
+      <Box sx={{ p: 2, maxWidth: 720, mx: 'auto' }}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={editedIndividually}
+              onChange={(e) => setEditedIndividually(e.target.checked)}
             />
+          }
+          label="Edit individual times"
+          sx={{ mb: 2 }}
+        />
 
-            {editedIndividually ? (
-              <Box sx={{ space: 1 }}>
-                {memberHours.length > 0 ? (
-                  memberHours.map((member) => (
-                    <Card key={member.memberId} sx={{ mb: 1, bgcolor: 'white' }}>
-                      <CardContent sx={{ py: 2 }}>
-                        <Typography variant="subtitle1" gutterBottom>
-                          {getCrewMemberName(member.memberId)} - {member.hours.toFixed(1)} hours
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          sx={{ mb: 2, color: 'var(--theme-base-text-secondary)' }}
-                        >
-                          Categorized: {getMemberTotalCategorized(member.memberId).toFixed(1)} | Remaining: {getMemberRemainingHours(member).toFixed(1)}
-                        </Typography>
-                        {isMemberOverLimit(member) && (
-                          <Alert severity="error" sx={{ mb: 2 }}>
-                            Categories exceed logged hours by {(getMemberTotalCategorized(member.memberId) - member.hours).toFixed(1)} hours
-                          </Alert>
-                        )}
+        {editedIndividually ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {memberHours.length > 0 ? (
+              memberHours.map((member) => (
+                <Box
+                  key={member.memberId}
+                  sx={{
+                    p: 2,
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    bgcolor: 'var(--theme-base-background-elevations-level-3)',
+                  }}
+                >
+                  <Typography variant="subtitle1" gutterBottom>
+                    {getCrewMemberName(member.memberId)} - {member.hours.toFixed(1)} hours
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ mb: 2, color: 'var(--theme-base-text-secondary)' }}
+                  >
+                    Categorized: {getMemberTotalCategorized(member.memberId).toFixed(1)} | Remaining: {getMemberRemainingHours(member).toFixed(1)}
+                  </Typography>
+                  {isMemberOverLimit(member) && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                      Categories exceed logged hours by {(getMemberTotalCategorized(member.memberId) - member.hours).toFixed(1)} hours
+                    </Alert>
+                  )}
 
-                        <Typography variant="body2" color="text.primary" gutterBottom>
-                          Hours Breakdown
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{ display: 'block', mb: 2, color: 'var(--theme-base-text-secondary)' }}
-                        >
-                          Optional - Cannot exceed {member.hours.toFixed(1)} logged hours
-                        </Typography>
-                        
-                        <Box sx={{ display: 'flex', gap: 2 }}>
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="body2" color="text.primary" gutterBottom>
-                              Working
-                            </Typography>
-                            <TextField
-                              fullWidth
-                              type="text"
-                              placeholder="0"
-                              variant="outlined"
-                              size="small"
-                              value={memberBreakdowns[member.memberId]?.workingHours || ''}
-                              onChange={(e) => updateMemberBreakdown(member.memberId, 'workingHours', e.target.value)}
-                              error={isMemberOverLimit(member)}
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  bgcolor: 'background.default',
-                                }
-                              }}
-                            />
-                          </Box>
-                          
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="body2" color="text.primary" gutterBottom>
-                              Traveling
-                            </Typography>
-                            <TextField
-                              fullWidth
-                              type="text"
-                              placeholder="0"
-                              variant="outlined"
-                              size="small"
-                              value={memberBreakdowns[member.memberId]?.travelingHours || ''}
-                              onChange={(e) => updateMemberBreakdown(member.memberId, 'travelingHours', e.target.value)}
-                              error={isMemberOverLimit(member)}
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  bgcolor: 'background.default',
-                                }
-                              }}
-                            />
-                          </Box>
-                          
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="body2" color="text.primary" gutterBottom>
-                              Standby
-                            </Typography>
-                            <TextField
-                              fullWidth
-                              type="text"
-                              placeholder="0"
-                              variant="outlined"
-                              size="small"
-                              value={memberBreakdowns[member.memberId]?.standbyHours || ''}
-                              onChange={(e) => updateMemberBreakdown(member.memberId, 'standbyHours', e.target.value)}
-                              error={isMemberOverLimit(member)}
-                              sx={{
-                                '& .MuiOutlinedInput-root': {
-                                  bgcolor: 'background.default',
-                                }
-                              }}
-                            />
-                          </Box>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                  <Alert severity="info">No crew members available.</Alert>
-                )}
-              </Box>
-            ) : (
-              <>
-                <Box sx={{ mb: 3 }}>
                   <Typography variant="body2" color="text.primary" gutterBottom>
-                    Total Hours Breakdown
+                    Hours Breakdown
                   </Typography>
                   <Typography
                     variant="caption"
                     sx={{ display: 'block', mb: 2, color: 'var(--theme-base-text-secondary)' }}
                   >
-                    Optional - Cannot exceed {totalHours.toFixed(1)} total hours
+                    Optional - Cannot exceed {member.hours.toFixed(1)} logged hours
                   </Typography>
-                  
+
                   <Box sx={{ display: 'flex', gap: 2 }}>
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="text.primary" gutterBottom>
@@ -510,20 +425,17 @@ const AdditionalDetails = () => {
                         placeholder="0"
                         variant="outlined"
                         size="small"
-                        value={totalWorkingHours}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9.]/g, '');
-                          setTotalWorkingHours(value);
-                        }}
-                        error={isOverLimit}
+                        value={memberBreakdowns[member.memberId]?.workingHours || ''}
+                        onChange={(e) => updateMemberBreakdown(member.memberId, 'workingHours', e.target.value)}
+                        error={isMemberOverLimit(member)}
                         sx={{
                           '& .MuiOutlinedInput-root': {
-                            bgcolor: 'background.default',
-                          }
+                            bgcolor: 'var(--theme-base-components-input-filled-enabled-fill)',
+                          },
                         }}
                       />
                     </Box>
-                    
+
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="text.primary" gutterBottom>
                         Traveling
@@ -534,20 +446,17 @@ const AdditionalDetails = () => {
                         placeholder="0"
                         variant="outlined"
                         size="small"
-                        value={totalTravelingHours}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9.]/g, '');
-                          setTotalTravelingHours(value);
-                        }}
-                        error={isOverLimit}
+                        value={memberBreakdowns[member.memberId]?.travelingHours || ''}
+                        onChange={(e) => updateMemberBreakdown(member.memberId, 'travelingHours', e.target.value)}
+                        error={isMemberOverLimit(member)}
                         sx={{
                           '& .MuiOutlinedInput-root': {
-                            bgcolor: 'background.default',
-                          }
+                            bgcolor: 'var(--theme-base-components-input-filled-enabled-fill)',
+                          },
                         }}
                       />
                     </Box>
-                    
+
                     <Box sx={{ flex: 1 }}>
                       <Typography variant="body2" color="text.primary" gutterBottom>
                         Standby
@@ -558,66 +467,164 @@ const AdditionalDetails = () => {
                         placeholder="0"
                         variant="outlined"
                         size="small"
-                        value={totalStandbyHours}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/[^0-9.]/g, '');
-                          setTotalStandbyHours(value);
-                        }}
-                        error={isOverLimit}
+                        value={memberBreakdowns[member.memberId]?.standbyHours || ''}
+                        onChange={(e) => updateMemberBreakdown(member.memberId, 'standbyHours', e.target.value)}
+                        error={isMemberOverLimit(member)}
                         sx={{
                           '& .MuiOutlinedInput-root': {
-                            bgcolor: 'background.default',
-                          }
+                            bgcolor: 'var(--theme-base-components-input-filled-enabled-fill)',
+                          },
                         }}
                       />
                     </Box>
                   </Box>
                 </Box>
-
-                <Alert severity={isOverLimit ? 'error' : 'info'} sx={{ mb: 3 }}>
-                  {isOverLimit
-                    ? `Categories exceed total logged hours by ${(getTotalCategorized() - totalHours).toFixed(1)} hours`
-                    : `Remaining hours to categorize: ${getRemainingHours().toFixed(1)}`}
-                </Alert>
-              </>
-            )}
-
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="body2" color="text.primary" gutterBottom>
-                Notes
+              ))
+            ) : (
+              <Typography sx={{ textAlign: 'center', py: 4, color: 'var(--theme-base-text-secondary)' }}>
+                No crew member hours data available
               </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                placeholder="Enter any notes or additional details here..."
-                variant="outlined"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    bgcolor: 'background.default',
-                  }
-                }}
-              />
+            )}
+          </Box>
+        ) : (
+          <>
+            <Box sx={{ mb: 3, p: 2, bgcolor: 'var(--theme-base-components-input-filled-enabled-fill)', borderRadius: 1 }}>
+              <Typography variant="h6" color="text.primary" gutterBottom>
+                Total Crew Hours: {totalHours.toFixed(1)}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'var(--theme-base-text-secondary)' }}>
+                Categorized: {getTotalCategorized().toFixed(1)} | Remaining: {getRemainingHours().toFixed(1)}
+              </Typography>
             </Box>
 
-            <Button
-              fullWidth
-              variant="contained"
-              onClick={handleSubmit}
-              size="large"
-              sx={{ 
-                mt: 2,
-                py: 1.5,
-                textTransform: 'none',
-                fontSize: '1rem'
-              }}
-            >
-              Submit
-            </Button>
-          </CardContent>
-        </Card>
+            <Alert severity={isOverLimit ? 'error' : 'info'} sx={{ mb: 3 }}>
+              {isOverLimit
+                ? `Categories exceed total hours by ${(getTotalCategorized() - totalHours).toFixed(1)} hours`
+                : `Remaining hours to categorize: ${getRemainingHours().toFixed(1)}`}
+            </Alert>
+
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" color="text.primary" gutterBottom>
+                Hours Breakdown
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{ display: 'block', mb: 2, color: 'var(--theme-base-text-secondary)' }}
+              >
+                Optional - Cannot exceed {totalHours.toFixed(1)} total hours
+              </Typography>
+
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" color="text.primary" gutterBottom>
+                    Working
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    type="text"
+                    placeholder="0"
+                    variant="outlined"
+                    size="small"
+                    value={totalWorkingHours}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.]/g, '');
+                      setTotalWorkingHours(value);
+                    }}
+                    error={isOverLimit}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: 'var(--theme-base-components-input-filled-enabled-fill)',
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" color="text.primary" gutterBottom>
+                    Traveling
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    type="text"
+                    placeholder="0"
+                    variant="outlined"
+                    size="small"
+                    value={totalTravelingHours}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.]/g, '');
+                      setTotalTravelingHours(value);
+                    }}
+                    error={isOverLimit}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: 'var(--theme-base-components-input-filled-enabled-fill)',
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="body2" color="text.primary" gutterBottom>
+                    Standby
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    type="text"
+                    placeholder="0"
+                    variant="outlined"
+                    size="small"
+                    value={totalStandbyHours}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9.]/g, '');
+                      setTotalStandbyHours(value);
+                    }}
+                    error={isOverLimit}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        bgcolor: 'var(--theme-base-components-input-filled-enabled-fill)',
+                      },
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Box>
+          </>
+        )}
+
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="body2" color="text.primary" gutterBottom>
+            Notes
+          </Typography>
+          <TextField
+            fullWidth
+            multiline
+            rows={4}
+            placeholder="Enter any notes or additional details here..."
+            variant="outlined"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            sx={{
+              '& .MuiOutlinedInput-root': {
+                bgcolor: 'var(--theme-base-components-input-filled-enabled-fill)',
+              },
+            }}
+          />
+        </Box>
+
+        <Button
+          fullWidth
+          variant="contained"
+          onClick={handleSubmit}
+          size="large"
+          sx={{
+            mt: 2,
+            py: 1.5,
+            textTransform: 'none',
+            fontSize: '1rem',
+          }}
+        >
+          Submit
+        </Button>
       </Box>
     </Layout>
   );
