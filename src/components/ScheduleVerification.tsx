@@ -15,7 +15,6 @@ import Popover from '@mui/material/Popover';
 import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import {
   CheckCircle,
-  Cancel,
   ChevronLeft,
   ChevronRight,
   CalendarToday,
@@ -337,7 +336,7 @@ export const ScheduleVerification = () => {
               startIcon={<CalendarToday />}
               onClick={handleDateButtonClick}
               sx={{ 
-                color: 'text.secondary',
+                color: 'var(--theme-base-text-secondary)',
                 fontWeight: 'normal',
                 textTransform: 'none'
               }}

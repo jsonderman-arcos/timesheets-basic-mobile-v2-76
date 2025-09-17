@@ -158,11 +158,11 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
     loadTimeEntries();
   }, [selectedDate, crewMembers, crewId]);
 
-  const updateTimeEntry = (crewId: string, field: 'startTime' | 'endTime', value: string) => {
+  const updateTimeEntry = (memberId: string, field: 'startTime' | 'endTime', value: string) => {
     setTimeEntries(prev => ({
       ...prev,
-      [crewId]: {
-        ...prev[crewId],
+      [memberId]: {
+        ...prev[memberId],
         [field]: value
       }
     }));
