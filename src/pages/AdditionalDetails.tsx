@@ -55,62 +55,72 @@ const AdditionalDetails = () => {
   const handleBack = () => navigate("/");
   
   const handleSubmit = async () => {
-    if (editedIndividually) {
-      // Validate that breakdowns don't exceed individual member hours
-      const invalidMembers = memberHours.filter((member: any) => {
-        const breakdown = memberBreakdowns[member.memberId] || { workingHours: '0', travelingHours: '0', standbyHours: '0' };
-        const totalCategorized = parseFloat(breakdown.workingHours || '0') + 
-                                parseFloat(breakdown.travelingHours || '0') + 
-                                parseFloat(breakdown.standbyHours || '0');
-        return totalCategorized > member.hours;
-      });
-
-      if (invalidMembers.length > 0) {
-        toast.error(`Some crew members have categorized hours exceeding their logged hours`);
-        return;
-      }
-    } else {
-      // Validate total crew hours breakdown
-      const totalCategorized = parseFloat(totalWorkingHours || '0') + 
-                              parseFloat(totalTravelingHours || '0') + 
-                              parseFloat(totalStandbyHours || '0');
-      
-      if (totalCategorized > totalHours) {
-        toast.error(`Total categorized hours (${totalCategorized}) cannot exceed total logged hours (${totalHours})`);
-        return;
-      }
-    }
-
-    if (!crewId) {
+    if (!crewId || !crewMembers.length) {
       toast.error('Crew information is unavailable. Please try again later.');
       return;
     }
 
     try {
-      // Prepare breakdown data for database insertion
-      const breakdownInserts: any[] = [];
       const today = new Date().toISOString().split('T')[0];
+      const timeEntriesToInsert: any[] = [];
+      const breakdownInserts: any[] = [];
 
-      if (editedIndividually) {
-        // Individual breakdowns - use each member's specific breakdown
-        for (const member of memberHours) {
-          const breakdown = memberBreakdowns[member.memberId] || { workingHours: '0', travelingHours: '0', standbyHours: '0' };
-          
-          // Get the time_entry_id for this member and date
-          const { data: timeEntry } = await supabase
-            .from('time_entries')
-            .select('id')
-            .eq('member_id', member.memberId)
-            .eq('date', today)
-            .eq('crew_id', crewId)
-            .single();
+      // Create new time entries for each crew member
+      for (const member of crewMembers) {
+        let memberHours = 8; // Default 8 hours
+        
+        // If edited individually, use specific member breakdown, otherwise use totals
+        if (editedIndividually) {
+          const breakdown = memberBreakdowns[member.id] || { workingHours: '0', travelingHours: '0', standbyHours: '0' };
+          memberHours = parseFloat(breakdown.workingHours || '0') + 
+                       parseFloat(breakdown.travelingHours || '0') + 
+                       parseFloat(breakdown.standbyHours || '0');
+        } else {
+          memberHours = getTotalCategorized() || 8;
+        }
 
-          if (timeEntry) {
-            // Add breakdown records for this member
+        // Create time entry
+        const timeEntry = {
+          crew_id: crewId,
+          member_id: member.id,
+          date: today,
+          start_time: '08:00:00',
+          end_time: memberHours === 8 ? '16:00:00' : `${8 + Math.floor(memberHours)}:${Math.round((memberHours % 1) * 60).toString().padStart(2, '0')}:00`,
+          working_hours: memberHours,
+          traveling_hours: 0,
+          standby_hours: 0,
+          status: 'submitted',
+          comments: notes || null,
+          submitted_by: null, // Will be set when auth is implemented
+          submitted_at: new Date().toISOString()
+        };
+        
+        timeEntriesToInsert.push(timeEntry);
+      }
+
+      // Insert time entries
+      const { data: insertedEntries, error: timeEntryError } = await supabase
+        .from('time_entries')
+        .insert(timeEntriesToInsert)
+        .select('id, member_id');
+
+      if (timeEntryError) {
+        console.error('Error creating time entries:', timeEntryError);
+        toast.error('Failed to create time entries. Please try again.');
+        return;
+      }
+
+      // Now create breakdown entries if hours are categorized
+      if (insertedEntries) {
+        for (const entry of insertedEntries) {
+          if (editedIndividually) {
+            // Individual breakdowns
+            const breakdown = memberBreakdowns[entry.member_id] || { workingHours: '0', travelingHours: '0', standbyHours: '0' };
+            
             if (parseFloat(breakdown.workingHours || '0') > 0) {
               breakdownInserts.push({
-                time_entry_id: timeEntry.id,
-                member_id: member.memberId,
+                time_entry_id: entry.id,
+                member_id: entry.member_id,
                 breakdown_type: 'working',
                 hours: parseFloat(breakdown.workingHours),
                 description: notes || null
@@ -118,8 +128,8 @@ const AdditionalDetails = () => {
             }
             if (parseFloat(breakdown.travelingHours || '0') > 0) {
               breakdownInserts.push({
-                time_entry_id: timeEntry.id,
-                member_id: member.memberId,
+                time_entry_id: entry.id,
+                member_id: entry.member_id,
                 breakdown_type: 'traveling',
                 hours: parseFloat(breakdown.travelingHours),
                 description: notes || null
@@ -127,33 +137,19 @@ const AdditionalDetails = () => {
             }
             if (parseFloat(breakdown.standbyHours || '0') > 0) {
               breakdownInserts.push({
-                time_entry_id: timeEntry.id,
-                member_id: member.memberId,
+                time_entry_id: entry.id,
+                member_id: entry.member_id,
                 breakdown_type: 'standby',
                 hours: parseFloat(breakdown.standbyHours),
                 description: notes || null
               });
             }
-          }
-        }
-      } else {
-        // Group breakdown - apply the same breakdown to each member
-        for (const member of memberHours) {
-          // Get the time_entry_id for this member and date
-          const { data: timeEntry } = await supabase
-            .from('time_entries')
-            .select('id')
-            .eq('member_id', member.memberId)
-            .eq('date', today)
-            .eq('crew_id', crewId)
-            .single();
-
-          if (timeEntry) {
-            // Add the same breakdown for each member
+          } else {
+            // Group breakdown - same for all members
             if (parseFloat(totalWorkingHours || '0') > 0) {
               breakdownInserts.push({
-                time_entry_id: timeEntry.id,
-                member_id: member.memberId,
+                time_entry_id: entry.id,
+                member_id: entry.member_id,
                 breakdown_type: 'working',
                 hours: parseFloat(totalWorkingHours),
                 description: notes || null
@@ -161,8 +157,8 @@ const AdditionalDetails = () => {
             }
             if (parseFloat(totalTravelingHours || '0') > 0) {
               breakdownInserts.push({
-                time_entry_id: timeEntry.id,
-                member_id: member.memberId,
+                time_entry_id: entry.id,
+                member_id: entry.member_id,
                 breakdown_type: 'traveling',
                 hours: parseFloat(totalTravelingHours),
                 description: notes || null
@@ -170,8 +166,8 @@ const AdditionalDetails = () => {
             }
             if (parseFloat(totalStandbyHours || '0') > 0) {
               breakdownInserts.push({
-                time_entry_id: timeEntry.id,
-                member_id: member.memberId,
+                time_entry_id: entry.id,
+                member_id: entry.member_id,
                 breakdown_type: 'standby',
                 hours: parseFloat(totalStandbyHours),
                 description: notes || null
@@ -179,49 +175,28 @@ const AdditionalDetails = () => {
             }
           }
         }
-      }
 
-      // Save breakdown data to database
-      if (breakdownInserts.length > 0) {
-        // First, delete any existing breakdowns for these time entries
-        const timeEntryIds = breakdownInserts.map(b => b.time_entry_id);
-        if (timeEntryIds.length > 0) {
-          await supabase
+        // Insert breakdown data if any exists
+        if (breakdownInserts.length > 0) {
+          const { error: breakdownError } = await supabase
             .from('hours_breakdown')
-            .delete()
-            .in('time_entry_id', timeEntryIds);
-        }
+            .insert(breakdownInserts);
 
-        // Insert new breakdown data
-        const { error } = await supabase
-          .from('hours_breakdown')
-          .insert(breakdownInserts);
-
-        if (error) {
-          console.error('Error saving hours breakdown:', error);
-          toast.error('Failed to save hours breakdown. Please try again.');
-          return;
+          if (breakdownError) {
+            console.error('Error saving hours breakdown:', breakdownError);
+            toast.error('Failed to save hours breakdown. Please try again.');
+            return;
+          }
         }
       }
 
-      // Also update time_entries with notes if provided
-      if (notes.trim()) {
-        const memberIds = memberHours.map((m: any) => m.memberId);
-        await supabase
-          .from('time_entries')
-          .update({ comments: notes })
-          .in('member_id', memberIds)
-          .eq('date', today)
-          .eq('crew_id', crewId);
-      }
-
-      toast.success("Details submitted successfully!");
+      toast.success("Time entries created successfully!");
       navigate("/", { 
         state: { showSuccess: true, refreshData: true }
       });
     } catch (error) {
-      console.error('Error saving breakdown:', error);
-      toast.error('Failed to save breakdown. Please try again.');
+      console.error('Error creating time entries:', error);
+      toast.error('Failed to create time entries. Please try again.');
     }
   };
 
