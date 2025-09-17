@@ -43,7 +43,7 @@ const Account = () => {
 
   return (
     <Layout title="Account" onBack={handleBack}>
-      <Box sx={{ flex: 1, overflowY: 'auto', p: 3 }}>
+      <Box sx={{ flex: 1, overflowY: 'auto', p: 3, minHeight: 0 }}>
         <Box sx={{ pb: 4 }}>
           {/* Profile Header */}
           <Card

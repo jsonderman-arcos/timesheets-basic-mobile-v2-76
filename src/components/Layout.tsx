@@ -60,7 +60,8 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
       paddingTop: 'calc(2 * env(safe-area-inset-top))',
       paddingLeft: 'env(safe-area-inset-left)',
       paddingRight: 'env(safe-area-inset-right)',
-      paddingBottom: 'env(safe-area-inset-bottom)'
+      paddingBottom: 'env(safe-area-inset-bottom)',
+      minHeight: 0
     }}>
       {/* Header */}
       <AppBar 
@@ -125,9 +126,12 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           flex: 1, 
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden',
+          overflowX: 'hidden',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
           pb: 'calc(80px + env(safe-area-inset-bottom))', // Space for FAB with safe area
-          bgcolor: 'var(--theme-base-background-elevations-level-4)'
+          bgcolor: 'var(--theme-base-background-elevations-level-4)',
+          minHeight: 0
         }}
       >
         {children}
