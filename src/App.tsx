@@ -21,7 +21,60 @@ import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
-const theme = createTheme(muiThemeJson as ThemeOptions);
+const inputFillColor = 'var(--theme-base-components-input-filled-enabled-fill)';
+const baseTheme = createTheme(muiThemeJson as ThemeOptions);
+const theme = createTheme(baseTheme, {
+  components: {
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          backgroundColor: inputFillColor,
+          '&:hover': {
+            backgroundColor: inputFillColor,
+          },
+          '&.Mui-focused': {
+            backgroundColor: inputFillColor,
+          },
+          '&.Mui-disabled': {
+            backgroundColor: inputFillColor,
+          },
+        },
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          backgroundColor: inputFillColor,
+          '&:hover': {
+            backgroundColor: inputFillColor,
+          },
+          '&.Mui-focused': {
+            backgroundColor: inputFillColor,
+          },
+          '&.Mui-disabled': {
+            backgroundColor: inputFillColor,
+          },
+        },
+      },
+    },
+    MuiFilledInput: {
+      styleOverrides: {
+        root: {
+          backgroundColor: inputFillColor,
+          '&:hover': {
+            backgroundColor: inputFillColor,
+          },
+          '&.Mui-focused': {
+            backgroundColor: inputFillColor,
+          },
+          '&.Mui-disabled': {
+            backgroundColor: inputFillColor,
+          },
+        },
+      },
+    },
+  },
+});
 
 const App = () => (
   <ThemeProvider theme={theme}>
