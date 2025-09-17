@@ -21,7 +21,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      external: ['@rollup/rollup-linux-x64-gnu']
+      external: (id) => id.includes('@rollup/rollup-linux-x64-gnu')
     }
   }
 }));
