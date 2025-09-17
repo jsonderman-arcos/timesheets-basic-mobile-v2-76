@@ -558,25 +558,30 @@ export const ScheduleVerification = () => {
             </Box>
 
             {/* Hours Breakdown */}
-            {hoursBreakdown.length > 0 && (
+            {timeEntries.length > 0 && (
               <Box>
                 <Typography variant="h6" fontWeight="medium" color="text.primary" gutterBottom>
                   Hours Breakdown
                 </Typography>
-                {['working', 'traveling', 'standby'].map(type => {
-                  const typeBreakdowns = hoursBreakdown.filter(b => b.breakdown_type === type);
-                  if (typeBreakdowns.length === 0) return null;
+                {[
+                  { type: 'working', field: 'working_hours', label: 'Working' },
+                  { type: 'traveling', field: 'traveling_hours', label: 'Travel' },
+                  { type: 'standby', field: 'standby_hours', label: 'Standby' }
+                ].map(({ type, field, label }) => {
+                  const totalHours = timeEntries.reduce((sum, entry) => 
+                    sum + parseFloat(entry[field] || '0'), 0
+                  );
                   
-                  const totalHours = typeBreakdowns.reduce((sum, b) => sum + parseFloat(b.hours), 0);
+                  if (totalHours === 0) return null;
                   
                   return (
                     <Box key={type} sx={{ mb: 1 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography
                           variant="body2"
-                          sx={{ textTransform: 'capitalize', color: 'var(--theme-base-text-secondary)' }}
+                          sx={{ color: 'var(--theme-base-text-secondary)' }}
                         >
-                          {type}
+                          {label}
                         </Typography>
                         <Typography variant="body2" fontWeight="medium" color="text.primary">
                           {totalHours.toFixed(1)}h
