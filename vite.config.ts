@@ -19,4 +19,12 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: ['@rollup/rollup-linux-x64-gnu']
+  },
+  build: {
+    rollupOptions: {
+      external: (id) => id.includes('@rollup/rollup-linux-x64-gnu')
+    }
+  }
 }));
