@@ -548,7 +548,9 @@ export const ScheduleVerification = () => {
                       )}
                     </Box>
                     <Typography variant="h6" color="text.primary" fontWeight="bold">
-                      {entry.hours_regular.toFixed(1)}h
+                      {(parseFloat(entry.working_hours || '0') + 
+                        parseFloat(entry.traveling_hours || '0') + 
+                        parseFloat(entry.standby_hours || '0')).toFixed(1)}h
                     </Typography>
                   </Box>
                 </Paper>
