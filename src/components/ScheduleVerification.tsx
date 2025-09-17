@@ -618,7 +618,7 @@ export const ScheduleVerification = () => {
             }}
             disabled={isBusy}
           >
-            Need to update this day's hours?
+            Need to update these hours?
           </Button>
         </Box>
       </Layout>
