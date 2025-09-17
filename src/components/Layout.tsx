@@ -21,7 +21,7 @@ import {
   Timer,
   AttachMoney
 } from "@mui/icons-material";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -33,6 +33,13 @@ interface LayoutProps {
 export const Layout = ({ children, title, onBack }: LayoutProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAccountViewActive = location.pathname.startsWith("/account");
+
+  const handleAccountButtonClick = () => {
+    if (isAccountViewActive) return;
+    navigate("/account");
+  };
 
   const menuItems = [
     { icon: <Home />, text: "Dashboard", action: () => navigate("/") },
@@ -95,9 +102,16 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
             {title}
           </Typography>
           <IconButton 
-            edge="end" 
-            onClick={() => navigate("/account")}
-            sx={{ color: 'var(--theme-base-primary-contrast-text)' }}
+            edge="end"
+            onClick={handleAccountButtonClick}
+            disabled={isAccountViewActive}
+            sx={{ 
+              color: 'var(--theme-base-primary-contrast-text)',
+              '&.Mui-disabled': {
+                color: 'var(--theme-base-primary-contrast-text)',
+                opacity: 0.4,
+              },
+            }}
           >
             <Person />
           </IconButton>
