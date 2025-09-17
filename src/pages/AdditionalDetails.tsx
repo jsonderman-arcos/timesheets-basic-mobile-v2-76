@@ -286,33 +286,34 @@ const AdditionalDetails = () => {
         <link rel="canonical" href="/additional-details" />
       </Helmet>
 
-      <Box sx={{ p: 2, maxWidth: 720, mx: 'auto' }}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={editedIndividually}
-              onChange={(e) => setEditedIndividually(e.target.checked)}
-            />
-          }
-          label="Edit individual times"
-          sx={{ mb: 2 }}
-        />
+      <Box sx={{ flex: 1, overflowY: 'auto', p: 2 }}>
+        <Box sx={{ maxWidth: 720, mx: 'auto', pb: 4 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={editedIndividually}
+                onChange={(e) => setEditedIndividually(e.target.checked)}
+              />
+            }
+            label="Edit individual times"
+            sx={{ mb: 2 }}
+          />
 
-        {editedIndividually ? (
-          // Individual Member View - show each member separately
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {memberHours.length > 0 ? (
-              memberHours.map((member: any) => (
-                <Box
-                  key={member.memberId}
-                  sx={{
-                    p: 2,
-                    borderRadius: 1,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    bgcolor: 'var(--theme-base-background-elevations-level-3)'
-                  }}
-                >
+          {editedIndividually ? (
+            // Individual Member View - show each member separately
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {memberHours.length > 0 ? (
+                memberHours.map((member: any) => (
+                  <Box
+                    key={member.memberId}
+                    sx={{
+                      p: 2,
+                      borderRadius: 1,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      bgcolor: 'var(--theme-base-background-elevations-level-3)'
+                    }}
+                  >
                   {/* Member Header */}
                   <Typography variant="subtitle1" gutterBottom>
                     {getCrewMemberName(member.memberId)} - {member.hours.toFixed(1)} hours
@@ -554,6 +555,7 @@ const AdditionalDetails = () => {
             >
               Submit
             </Button>
+        </Box>
       </Box>
     </Layout>
   );
