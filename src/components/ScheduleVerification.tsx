@@ -200,11 +200,13 @@ export const ScheduleVerification = () => {
   }, [selectedDate]);
 
   const handleCloseDashboardSuccess = useCallback(() => {
-    setSelectedDate(new Date());
+    const today = new Date();
+    setSelectedDate(today);
     setIsCompleted(false);
     setShowTimeEntry(false);
     setDatePickerAnchor(null);
-  }, []);
+    navigate('/', { replace: true });
+  }, [navigate]);
 
   const getCrewMemberName = useCallback(
     (memberId: string) => crewMembers.find((member) => member.id === memberId)?.name ?? 'Unknown Member',
@@ -328,6 +330,14 @@ export const ScheduleVerification = () => {
               <Typography sx={{ color: 'var(--theme-base-text-secondary)' }}>
                 Your work hours have been recorded. Thank you for updating your schedule.
               </Typography>
+              <Button
+                size="small"
+                color="primary"
+                onClick={handleCloseDashboardSuccess}
+                sx={{ textTransform: 'none' }}
+              >
+                Close
+              </Button>
             </CardContent>
           </Card>
         </Box>
@@ -466,14 +476,7 @@ export const ScheduleVerification = () => {
                   Today's Time Tracking Complete
                 </Typography>
               </Box>
-              <Button
-                size="small"
-                color="primary"
-                onClick={handleCloseDashboardSuccess}
-                sx={{ textTransform: 'none' }}
-              >
-                Close
-              </Button>
+              
             </Box>
             
             {/* Summary Stats */}
