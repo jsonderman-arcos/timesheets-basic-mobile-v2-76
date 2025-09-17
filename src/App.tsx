@@ -1,10 +1,14 @@
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider, createTheme, type ThemeOptions } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import Box from '@mui/material/Box';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import { muiThemeJson } from 'arcos-harmony-design-system';
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdditionalDetails from "./pages/AdditionalDetails";
@@ -17,60 +21,78 @@ import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#3b82f6',
-    },
-    secondary: {
-      main: '#f59e0b',
-    },
-    background: {
-      default: '#ffffff',
-      paper: '#f8fafc',
-    },
-    text: {
-      primary: '#0f172a',
-      secondary: '#64748b',
-    },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-});
+const theme = createTheme(muiThemeJson as ThemeOptions);
 
 const App = () => (
-  <div className="flex items-center justify-center min-h-screen bg-black">
-    <div className="w-[393px] max-h-[850px] h-screen bg-background rounded-[2.5rem] overflow-hidden shadow-2xl border-8 border-gray-800 relative flex flex-col">
-      {/* iPhone notch */}
-      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 bg-black rounded-b-2xl z-50"></div>
-      
-      {/* App content with proper scrolling */}
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <QueryClientProvider client={queryClient}>
-          <HelmetProvider>
-            <ToastContainer position="top-right" theme="dark" />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/convoys" element={<Convoys />} />
-                <Route path="/time-tracking" element={<Navigate to="/" replace />} />
-                <Route path="/assess" element={<Assess />} />
-                <Route path="/repairs" element={<Repairs />} />
-                <Route path="/expenses" element={<Expenses />} />
-                <Route path="/additional-details" element={<AdditionalDetails />} />
-                <Route path="/account" element={<Account />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </HelmetProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
-    </div>
-  </div>
+  <ThemeProvider theme={theme}>
+    <CssBaseline />
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          bgcolor: 'common.black',
+          py: 4,
+          px: 2,
+        }}
+      >
+        <Box
+          sx={{
+            width: 393,
+            maxWidth: '100%',
+            height: '100vh',
+            maxHeight: 850,
+            bgcolor: 'background.default',
+            borderRadius: '2.5rem',
+            overflow: 'hidden',
+            boxShadow: 12,
+            border: '8px solid',
+            borderColor: 'grey.900',
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: '50%',
+              transform: 'translate(-50%, 0)',
+              width: 128,
+              height: 24,
+              bgcolor: 'common.black',
+              borderBottomLeftRadius: '1.5rem',
+              borderBottomRightRadius: '1.5rem',
+              zIndex: 50,
+            }}
+          />
+
+          <QueryClientProvider client={queryClient}>
+            <HelmetProvider>
+              <ToastContainer position="top-right" theme="dark" />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/convoys" element={<Convoys />} />
+                  <Route path="/time-tracking" element={<Navigate to="/" replace />} />
+                  <Route path="/assess" element={<Assess />} />
+                  <Route path="/repairs" element={<Repairs />} />
+                  <Route path="/expenses" element={<Expenses />} />
+                  <Route path="/additional-details" element={<AdditionalDetails />} />
+                  <Route path="/account" element={<Account />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </HelmetProvider>
+          </QueryClientProvider>
+        </Box>
+      </Box>
+    </LocalizationProvider>
+  </ThemeProvider>
 );
 
 export default App;

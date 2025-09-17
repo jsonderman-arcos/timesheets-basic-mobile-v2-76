@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Card,
@@ -11,23 +11,47 @@ import {
   Chip,
   Divider
 } from '@mui/material';
+import Popover from '@mui/material/Popover';
+import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
 import {
   CheckCircle,
   Cancel,
   ChevronLeft,
   ChevronRight,
   CalendarToday,
-  Schedule,
   Edit
 } from '@mui/icons-material';
-import { format } from 'date-fns';
 import { TimeEntry } from './TimeEntry';
 import { Layout } from './Layout';
 import { toast } from 'react-toastify';
 import { supabase } from '@/integrations/supabase/client';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+import { useCrewData } from '@/hooks/useCrewData';
+import { DEFAULT_SHIFT_END, DEFAULT_SHIFT_START } from '@/constants/crew';
+
+const formatTime24Hour = (time: string | null | undefined) => {
+  if (!time) return '';
+  const trimmed = time.trim();
+
+  const meridiemMatch = trimmed.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (meridiemMatch) {
+    const hours = parseInt(meridiemMatch[1], 10);
+    const minutes = meridiemMatch[2];
+    const period = meridiemMatch[3].toUpperCase();
+    const normalizedHours = period === 'PM'
+      ? (hours % 12) + 12
+      : hours % 12;
+    return `${normalizedHours.toString().padStart(2, '0')}:${minutes}`;
+  }
+
+  const standardMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (standardMatch) {
+    const hours = parseInt(standardMatch[1], 10);
+    const minutes = standardMatch[2];
+    return `${hours.toString().padStart(2, '0')}:${minutes}`;
+  }
+
+  return trimmed;
+};
 
 export const ScheduleVerification = () => {
   const [showTimeEntry, setShowTimeEntry] = useState(false);
@@ -37,50 +61,20 @@ export const ScheduleVerification = () => {
   const [timeEntries, setTimeEntries] = useState<any[]>([]);
   const [hoursBreakdown, setHoursBreakdown] = useState<any[]>([]);
   const [loading, setLoading] = useState(true); // Start with loading true to prevent flash
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [datePickerAnchor, setDatePickerAnchor] = useState<HTMLElement | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { crewMembers, crewId, loggedInMember, isLoading: crewLoading, error: crewError } = useCrewData();
+  const isBusy = loading || crewLoading;
 
-  // Immediately check for existing entries on component mount
   useEffect(() => {
-    const initializeComponent = async () => {
-      setLoading(true);
-      await checkExistingTimeEntries();
-    };
-    initializeComponent();
-  }, []);
-
-  // Handle navigation state (success messages, refresh requests)
-  useEffect(() => {
-    const st = location.state as any;
-    if (st?.showSuccess) {
-      setIsCompleted(true);
-      toast.success('Schedule updated successfully!');
-      // Clear the location state to prevent showing success on refresh
-      window.history.replaceState({}, document.title);
-      // Force refresh after a brief delay to ensure database consistency
-      setTimeout(async () => {
-        await checkExistingTimeEntries();
-      }, 1000);
+    if (crewError) {
+      console.error('Error loading crew data:', crewError);
+      toast.error('Unable to load crew information.');
     }
-    if (st?.refreshData) {
-      // Force refresh of time entries data with delay
-      setTimeout(async () => {
-        await checkExistingTimeEntries();
-      }, 500);
-    }
-  }, [location.state]);
+  }, [crewError]);
 
-  // Check for existing time entries when date changes
-  useEffect(() => {
-    const checkDateChange = async () => {
-      setLoading(true);
-      await checkExistingTimeEntries();
-    };
-    checkDateChange();
-  }, [selectedDate]);
-
-  const checkExistingTimeEntries = async () => {
+  const checkExistingTimeEntries = useCallback(async (crewIdentifier: string) => {
     console.log('Checking existing time entries for date:', selectedDate.toISOString().split('T')[0]);
     try {
       const dateStr = selectedDate.toISOString().split('T')[0];
@@ -93,7 +87,7 @@ export const ScheduleVerification = () => {
           crew_members!inner(name)
         `)
         .eq('date', dateStr)
-        .eq('crew_id', '8685dabc-746e-4fe8-90a3-c41035c79dc0');
+        .eq('crew_id', crewIdentifier);
 
       if (entriesError) {
         console.error('Error fetching time entries:', entriesError);
@@ -132,17 +126,38 @@ export const ScheduleVerification = () => {
       setHoursBreakdown([]);
     } finally {
       setLoading(false);
-      console.log('Loading set to false, hasTimeEntries:', hasTimeEntries);
     }
-  };
+  }, [selectedDate]);
 
-  // Use real crew member IDs from the database with updated default hours (6am-10pm = 16 hours)
-  const crewMembers = [
-    { id: '3751647d-f0ae-4d62-a0a1-9a0bd3dbc2b1', name: 'David Brown', scheduledStart: '06:00', scheduledEnd: '22:00' },
-    { id: '47e34e83-b887-4d79-82a9-ffc1f63f5e17', name: 'John Smith', scheduledStart: '06:00', scheduledEnd: '22:00' },
-    { id: 'c648a699-cf2a-4ac7-bce8-19883a0db42b', name: 'Mike Johnson', scheduledStart: '06:00', scheduledEnd: '22:00' },
-    { id: '54704459-cf20-4137-9f6c-0c58ab8ac8b9', name: 'Sarah Williams', scheduledStart: '06:00', scheduledEnd: '22:00' },
-  ];
+  // Handle navigation state (success messages, refresh requests)
+  useEffect(() => {
+    const st = location.state as any;
+    if (!crewId) return;
+
+    if (st?.showSuccess) {
+      setIsCompleted(true);
+      toast.success('Schedule updated successfully!');
+      window.history.replaceState({}, document.title);
+      setTimeout(async () => {
+        await checkExistingTimeEntries(crewId);
+      }, 1000);
+    }
+    if (st?.refreshData) {
+      setTimeout(async () => {
+        await checkExistingTimeEntries(crewId);
+      }, 500);
+    }
+  }, [location.state, crewId, checkExistingTimeEntries]);
+
+  // Fetch time entries when date or crew changes
+  useEffect(() => {
+    if (!crewId) return;
+    const fetchEntries = async () => {
+      setLoading(true);
+      await checkExistingTimeEntries(crewId);
+    };
+    fetchEntries();
+  }, [selectedDate, crewId, checkExistingTimeEntries]);
   
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
@@ -169,14 +184,51 @@ export const ScheduleVerification = () => {
     setShowTimeEntry(false);
   };
 
+  const handleDateButtonClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    setDatePickerAnchor(event.currentTarget);
+  };
+
+  const handleDatePickerClose = () => {
+    setDatePickerAnchor(null);
+  };
+
+  const getCrewMemberName = useCallback(
+    (memberId: string) => crewMembers.find((member) => member.id === memberId)?.name ?? 'Unknown Member',
+    [crewMembers]
+  );
+
+  const calculateScheduledHours = useCallback((start: string, end: string) => {
+    if (!start || !end) return 0;
+    const [startHours, startMinutes] = start.split(':').map(Number);
+    const [endHours, endMinutes] = end.split(':').map(Number);
+    if (
+      Number.isNaN(startHours) ||
+      Number.isNaN(startMinutes) ||
+      Number.isNaN(endHours) ||
+      Number.isNaN(endMinutes)
+    ) {
+      return 0;
+    }
+
+    const totalStart = startHours * 60 + startMinutes;
+    const totalEnd = endHours * 60 + endMinutes;
+    const diff = totalEnd - totalStart;
+    return diff > 0 ? diff / 60 : 0;
+  }, []);
+
   const handleConfirmSchedule = () => {
-    // Calculate individual member hours (all scheduled for 16 hours)
-    const memberHours = crewMembers.map(member => ({
+    if (crewMembers.length === 0) {
+      toast.error('Crew information is still loading. Please try again momentarily.');
+      return;
+    }
+
+    const memberHours = crewMembers.map((member) => ({
       memberId: member.id,
-      hours: 16
+      hours: calculateScheduledHours(member.scheduledStart, member.scheduledEnd),
     }));
-    navigate('/additional-details', { 
-      state: { memberHours, editedIndividually: false }
+
+    navigate('/additional-details', {
+      state: { memberHours, editedIndividually: false },
     });
   };
 
@@ -188,15 +240,7 @@ export const ScheduleVerification = () => {
     setShowTimeEntry(true);
   };
 
-  const getCrewMemberName = (memberId: string) => {
-    switch (memberId) {
-      case '3751647d-f0ae-4d62-a0a1-9a0bd3dbc2b1': return 'David Brown';
-      case '47e34e83-b887-4d79-82a9-ffc1f63f5e17': return 'John Smith';
-      case 'c648a699-cf2a-4ac7-bce8-19883a0db42b': return 'Mike Johnson';
-      case '54704459-cf20-4137-9f6c-0c58ab8ac8b9': return 'Sarah Williams';
-      default: return 'Unknown Member';
-    }
-  };
+  const primaryCrewMember = crewMembers[0];
 
   const handleTimeSubmit = (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean) => {
     navigate('/additional-details', { 
@@ -206,8 +250,9 @@ export const ScheduleVerification = () => {
 
   // Add a small delay to ensure database operations complete before checking
   const refreshDataWithDelay = () => {
+    if (!crewId) return;
     setTimeout(() => {
-      checkExistingTimeEntries();
+      checkExistingTimeEntries(crewId);
     }, 500);
   };
 
@@ -233,7 +278,7 @@ export const ScheduleVerification = () => {
               <Typography variant="h5" fontWeight="bold" color="text.primary" gutterBottom>
                 All Set!
               </Typography>
-              <Typography color="text.secondary">
+              <Typography sx={{ color: 'var(--theme-base-text-secondary)' }}>
                 Your work hours have been recorded. Thank you for updating your schedule.
               </Typography>
             </CardContent>
@@ -244,7 +289,15 @@ export const ScheduleVerification = () => {
   }
 
   if (showTimeEntry) {
-    return <TimeEntry onSubmit={handleTimeSubmit} onBack={() => setShowTimeEntry(false)} selectedDate={selectedDate} crewMembers={crewMembers} />;
+    return (
+      <TimeEntry
+        onSubmit={handleTimeSubmit}
+        onBack={() => setShowTimeEntry(false)}
+        selectedDate={selectedDate}
+        crewMembers={crewMembers}
+        crewId={crewId}
+      />
+    );
   }
 
   console.log('Rendering with hasTimeEntries:', hasTimeEntries, 'showTimeEntry:', showTimeEntry);
@@ -260,74 +313,96 @@ export const ScheduleVerification = () => {
           left: 0,
           right: 0,
           zIndex: 10,
-          bgcolor: 'background.default',
+          bgcolor: 'var(--theme-base-background-elevations-level-5)',
           borderBottom: 1,
           borderColor: 'divider',
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
           gap: 1,
-          py: 2
+          py: 2,
+          flexShrink: 0
         }}>
           <IconButton 
             onClick={goToPreviousDay}
             size="small"
-            sx={{ color: 'text.secondary' }}
+            sx={{ color: 'var(--theme-base-text-secondary)' }}
           >
             <ChevronLeft />
           </IconButton>
           
-          <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="text"
-                startIcon={<CalendarToday />}
-                sx={{ 
-                  color: 'text.primary',
-                  fontWeight: 'normal',
-                  textTransform: 'none'
-                }}
-              >
-                {formatDate(selectedDate)}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white" align="center">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => {
+          <>
+            <Button
+              variant="text"
+              startIcon={<CalendarToday />}
+              onClick={handleDateButtonClick}
+              sx={{ 
+                color: 'text.secondary',
+                fontWeight: 'normal',
+                textTransform: 'none'
+              }}
+            >
+              {formatDate(selectedDate)}
+            </Button>
+            <Popover
+              open={Boolean(datePickerAnchor)}
+              anchorEl={datePickerAnchor}
+              onClose={handleDatePickerClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    p: 2,
+                    mt: 1,
+                  },
+                },
+              }}
+            >
+              <DateCalendar
+                value={selectedDate}
+                onChange={(date) => {
                   if (date) {
                     setSelectedDate(date);
-                    setDatePickerOpen(false);
+                    setIsCompleted(false);
+                    setShowTimeEntry(false);
                   }
+                  handleDatePickerClose();
                 }}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
               />
-            </PopoverContent>
-          </Popover>
+            </Popover>
+          </>
           
           <IconButton 
             onClick={goToNextDay}
             size="small"
-            sx={{ color: 'text.secondary' }}
+            sx={{ color: 'var(--theme-base-text-secondary)' }}
           >
             <ChevronRight />
           </IconButton>
         </Box>
 
         {/* Scrollable Content */}
-        <Box sx={{ p: 2, pt: 0 }}>
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            p: 2,
+            pt: '24px',
+            bgcolor: 'var(--theme-base-background-elevations-level-5)'
+          }}
+        >
+          {loggedInMember && (
+            <Typography
+              variant="subtitle2"
+              sx={{ mb: 2, color: 'var(--theme-base-text-secondary)' }}
+            >
+              Logged in as {loggedInMember.name}
+            </Typography>
+          )}
 
           {/* Time Tracking Overview */}
-          <Paper sx={{ 
-            bgcolor: 'background.paper', 
-            p: 3, 
-            borderRadius: 2,
-            border: 1,
-            borderColor: 'divider',
-            mb: 3
-          }}>
+         
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
               <CheckCircle sx={{ color: 'success.main' }} />
               <Typography variant="h5" fontWeight="semibold" color="text.primary">
@@ -341,7 +416,7 @@ export const ScheduleVerification = () => {
                 <Typography variant="h3" fontWeight="bold" color="primary.main">
                   {timeEntries.reduce((total, entry) => total + parseFloat(entry.hours_regular), 0).toFixed(1)}
                 </Typography>
-                <Typography variant="body1" color="text.secondary" fontWeight="medium">
+                <Typography variant="body1" fontWeight="medium" sx={{ color: 'var(--theme-base-text-secondary)' }}>
                   Total Hours Logged
                 </Typography>
               </Box>
@@ -349,7 +424,7 @@ export const ScheduleVerification = () => {
                 <Typography variant="h3" fontWeight="bold" color="primary.main">
                   {timeEntries.length}
                 </Typography>
-                <Typography variant="body1" color="text.secondary" fontWeight="medium">
+                <Typography variant="body1" fontWeight="medium" sx={{ color: 'var(--theme-base-text-secondary)' }}>
                   Crew Members
                 </Typography>
               </Box>
@@ -360,7 +435,7 @@ export const ScheduleVerification = () => {
                       hoursBreakdown.some(b => b.breakdown_type === type)
                     ).length}
                   </Typography>
-                  <Typography variant="body1" color="text.secondary" fontWeight="medium">
+                  <Typography variant="body1" fontWeight="medium" sx={{ color: 'var(--theme-base-text-secondary)' }}>
                     Hour Categories
                   </Typography>
                 </Box>
@@ -376,7 +451,7 @@ export const ScheduleVerification = () => {
               </Typography>
               {timeEntries.map((entry) => (
                 <Paper key={entry.id} sx={{ 
-                  bgcolor: 'background.default', 
+                  bgcolor: 'var(--theme-base-background-elevations-highest)', 
                   p: 2, 
                   mb: 1,
                   borderRadius: 1
@@ -386,11 +461,14 @@ export const ScheduleVerification = () => {
                       <Typography variant="body1" fontWeight="medium" color="text.primary">
                         {getCrewMemberName(entry.member_id)}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {entry.start_time} - {entry.end_time}
+                      <Typography variant="body2" sx={{ color: 'var(--theme-base-text-secondary)' }}>
+                        {formatTime24Hour(entry.start_time)} - {formatTime24Hour(entry.end_time)}
                       </Typography>
                       {entry.comments && (
-                        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', mt: 0.5 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ fontStyle: 'italic', mt: 0.5, color: 'var(--theme-base-text-secondary)' }}
+                        >
                           Note: {entry.comments}
                         </Typography>
                       )}
@@ -418,7 +496,10 @@ export const ScheduleVerification = () => {
                   return (
                     <Box key={type} sx={{ mb: 1 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ textTransform: 'capitalize', color: 'var(--theme-base-text-secondary)' }}
+                        >
                           {type}
                         </Typography>
                         <Typography variant="body2" fontWeight="medium" color="text.primary">
@@ -430,7 +511,7 @@ export const ScheduleVerification = () => {
                 })}
               </Box>
             )}
-          </Paper>
+          
 
           {/* Secondary Update Button */}
           <Button
@@ -441,17 +522,11 @@ export const ScheduleVerification = () => {
             onClick={handleUpdateHours}
             sx={{ 
               py: 1.5,
-              textTransform: 'none',
-              fontSize: '0.95rem',
-              borderStyle: 'dashed',
-              justifyContent: 'flex-start',
               '& .MuiButton-startIcon': {
                 marginRight: 1
               },
-              '&:hover': {
-                borderStyle: 'solid'
-              }
             }}
+            disabled={isBusy}
           >
             Need to update today's hours?
           </Button>
@@ -471,64 +546,93 @@ export const ScheduleVerification = () => {
           left: 0,
           right: 0,
           zIndex: 10,
-          bgcolor: 'background.default',
+          bgcolor: 'var(--theme-component-navigation-sidebar-background-fill)',
           borderBottom: 1,
           borderColor: 'divider',
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
           gap: 1,
-          py: 2
+          py: 2,
+          flexShrink: 0
         }}>
           <IconButton 
             onClick={goToPreviousDay}
             size="small"
-            sx={{ color: 'text.secondary' }}
+            sx={{ color: 'var(--theme-base-text-secondary)' }}
           >
             <ChevronLeft />
           </IconButton>
           
-          <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="text"
-                startIcon={<CalendarToday />}
-                sx={{ 
-                  color: 'text.primary',
-                  fontWeight: 'normal',
-                  textTransform: 'none'
-                }}
-              >
-                {formatDate(selectedDate)}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 bg-white" align="center">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => {
+          <>
+            <Button
+              variant="text"
+              startIcon={<CalendarToday />}
+              onClick={handleDateButtonClick}
+              sx={{ 
+                color: 'text.primary',
+                fontWeight: 'normal',
+                textTransform: 'none'
+              }}
+            >
+              {formatDate(selectedDate)}
+            </Button>
+            <Popover
+              open={Boolean(datePickerAnchor)}
+              anchorEl={datePickerAnchor}
+              onClose={handleDatePickerClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    p: 2,
+                    mt: 1,
+                  },
+                },
+              }}
+            >
+              <DateCalendar
+                value={selectedDate}
+                onChange={(date) => {
                   if (date) {
                     setSelectedDate(date);
-                    setDatePickerOpen(false);
+                    setIsCompleted(false);
+                    setShowTimeEntry(false);
                   }
+                  handleDatePickerClose();
                 }}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
               />
-            </PopoverContent>
-          </Popover>
+            </Popover>
+          </>
           
           <IconButton 
             onClick={goToNextDay}
             size="small"
-            sx={{ color: 'text.secondary' }}
+            sx={{ color: 'var(--theme-base-text-secondary)' }}
           >
             <ChevronRight />
           </IconButton>
         </Box>
 
         {/* Scrollable Content */}
-        <Box sx={{ p: 2, pt: 0 }}>
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            p: 2,
+            pt: '24px',
+            bgcolor: 'var(--theme-base-background-elevations-level-5)'
+          }}
+        >
+          {loggedInMember && (
+            <Typography
+              variant="subtitle2"
+              sx={{ mb: 2, color: 'var(--theme-base-text-secondary)' }}
+            >
+              Logged in as {loggedInMember.name}
+            </Typography>
+          )}
           <Box sx={{ mb: 3 }}>
           <Typography 
             variant="h6" 
@@ -548,103 +652,101 @@ export const ScheduleVerification = () => {
               color="success"
               startIcon={<CheckCircle />}
               onClick={handleConfirmSchedule}
-              sx={{ 
-                mb: 1.5,
-                py: 1.5,
-                px: 4,
-                textTransform: 'none',
-                fontSize: '1rem',
-                justifyContent: 'flex-start',
-                '& .MuiButton-startIcon': {
-                  marginRight: 1
-                }
-              }}
+              sx={{ mb: 3, p:2 }}
+              disabled={isBusy}
             >
-              Yes, everyone worked scheduled hours
+              Correct. Submit the hours.
             </Button>
             
             <Button 
               variant="outlined"
               size="large"
+              color="secondary"
               fullWidth
-              startIcon={<Cancel />}
+              startIcon={<Edit />}
               onClick={handleDenySchedule}
-              sx={{ 
-                py: 1.5,
-                textTransform: 'none',
-                fontSize: '1rem',
-                justifyContent: 'flex-start',
-                '& .MuiButton-startIcon': {
-                  marginRight: 1
-                }
-              }}
+              disabled={isBusy}
             >
-              No, need to edit hours
+              I need to edit these hours.
             </Button>
           </Box>
         </Box>
-
-        <Paper sx={{ 
-          bgcolor: 'background.paper', 
-          p: 3, 
-          borderRadius: 2,
-          border: 1,
-          borderColor: 'divider'
-        }}>
-          <Typography variant="h6" fontWeight="semibold" color="text.primary" gutterBottom>
-            Scheduled Hours
-          </Typography>
-          
-          <Paper sx={{ 
-            bgcolor: 'background.default', 
-            p: 2, 
-            mb: 2,
-            borderRadius: 1
-          }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography color="text.secondary">Start Time:</Typography>
-                <Typography fontWeight="medium" color="text.primary">
-                  {crewMembers[0].scheduledStart}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography color="text.secondary">End Time:</Typography>
-                <Typography fontWeight="medium" color="text.primary">
-                  {crewMembers[0].scheduledEnd}
-                </Typography>
-              </Box>
-            </Box>
-            
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography color="text.secondary" fontWeight="bold">Total Hours:</Typography>
-                <Typography fontWeight="bold" color="text.primary" variant="h6">16 hours</Typography>
-              </Box>
-          </Paper>
-          
-          <Box>
-            <Typography variant="subtitle1" fontWeight="medium" color="text.primary" gutterBottom>
-              Crew Members
+{/* Scheduled Hours Overview */ }
+        {crewMembers.length > 0 && (
+          <Paper
+            elevation={10}
+            sx={{
+              bgcolor: 'var(--theme-base-background-elevations-level-2)',
+              p: 3,
+              borderRadius: 2,
+              boxShadow: 4,
+            }}
+          >
+            <Typography variant="h6" fontWeight="semibold" color="text.primary" gutterBottom>
+              Scheduled Hours
             </Typography>
-            <Box sx={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(2, 1fr)', 
-              gap: 1 
-            }}>
-              {crewMembers.map((member) => (
-                <Chip
-                  key={member.id}
-                  label={member.name}
-                  variant="outlined"
-                  sx={{ 
-                    bgcolor: 'background.default',
-                    justifyContent: 'flex-start'
-                  }}
-                />
-              ))}
+
+            <Paper
+              sx={{
+                bgcolor: 'var(--theme-base-background-elevations-highest)',
+                p: 2,
+                mb: 2,
+                borderRadius: 1,
+              }}
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography sx={{ color: 'var(--theme-base-text-secondary)' }}>Start Time:</Typography>
+                  <Typography fontWeight="medium" color="text.primary">
+                    {formatTime24Hour(primaryCrewMember?.scheduledStart ?? DEFAULT_SHIFT_START)}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Typography sx={{ color: 'var(--theme-base-text-secondary)' }}>End Time:</Typography>
+                  <Typography fontWeight="medium" color="text.primary">
+                    {formatTime24Hour(primaryCrewMember?.scheduledEnd ?? DEFAULT_SHIFT_END)}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography fontWeight="bold" sx={{ color: 'var(--theme-base-text-secondary)' }}>Total Hours:</Typography>
+                <Typography fontWeight="bold" color="text.primary" variant="h6">
+                  {calculateScheduledHours(
+                    primaryCrewMember?.scheduledStart ?? DEFAULT_SHIFT_START,
+                    primaryCrewMember?.scheduledEnd ?? DEFAULT_SHIFT_END
+                  ).toFixed(1)}h
+                </Typography>
+              </Box>
+            </Paper>
+
+            <Box>
+              <Typography variant="subtitle1" fontWeight="medium" color="text.primary" gutterBottom>
+                Crew Members
+              </Typography>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: 1,
+                }}
+              >
+                {crewMembers.map((member) => (
+                  <Chip
+                    key={member.id}
+                    label={member.name}
+                    variant="outlined"
+                    color={'primary'}
+                    sx={{
+                      backgroundColor: 'var(--core-lighthouse-colors-blues-slate-blue-100)',
+                      justifyContent: 'flex-start',
+                    }}
+                  />
+                ))}
+              </Box>
             </Box>
-          </Box>
-        </Paper>
+          </Paper>
+        )}
         </Box>
       </Layout>
   );

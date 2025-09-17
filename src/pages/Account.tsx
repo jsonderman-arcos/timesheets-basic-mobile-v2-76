@@ -22,9 +22,11 @@ import {
   Edit 
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useCrewData } from '@/hooks/useCrewData';
 
 const Account = () => {
   const navigate = useNavigate();
+  const { loggedInMember, crewName } = useCrewData();
 
   const handleBack = () => {
     navigate(-1);
@@ -57,13 +59,30 @@ const Account = () => {
               <Person sx={{ fontSize: 40 }} />
             </Avatar>
             <Typography variant="h5" component="h2" sx={{ mb: 1, fontWeight: 600 }}>
-              John Doe
+              {loggedInMember?.name ?? 'Crew Member'}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              john.doe@company.com
+            <Typography variant="body2" sx={{ color: 'var(--theme-base-text-secondary)' }}>
+              {crewName ? `Crew: ${crewName}` : 'Crew assignment unavailable'}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Driver ID: #12345
+            <Typography
+              variant="body2"
+              sx={{ mt: 1, color: 'var(--theme-base-text-secondary)' }}
+            >
+              {loggedInMember?.role ? `Role: ${loggedInMember.role}` : 'Role information unavailable'}
+            </Typography>
+            {loggedInMember?.hourlyRate !== null && loggedInMember?.hourlyRate !== undefined && (
+              <Typography
+                variant="body2"
+                sx={{ mt: 1, color: 'var(--theme-base-text-secondary)' }}
+              >
+                Hourly Rate: ${loggedInMember.hourlyRate?.toFixed(2)}
+              </Typography>
+            )}
+            <Typography
+              variant="body2"
+              sx={{ mt: 1, color: 'var(--theme-base-text-secondary)' }}
+            >
+              Member ID: {loggedInMember?.id ?? 'N/A'}
             </Typography>
           </CardContent>
         </Card>

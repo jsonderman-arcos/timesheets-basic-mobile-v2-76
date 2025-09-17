@@ -3,17 +3,18 @@ import {
   Card,
   CardContent,
   Typography,
-  TextField,
   Button,
   Box,
   Switch,
-  FormControlLabel,
-  Paper
+  FormControlLabel
 } from '@mui/material';
-import { ArrowBack, Save } from '@mui/icons-material';
+import { Save } from '@mui/icons-material';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { format, isValid } from 'date-fns';
 import { Layout } from './Layout';
 import { toast } from 'react-toastify';
 import { supabase } from '@/integrations/supabase/client';
+import { DEFAULT_SHIFT_END, DEFAULT_SHIFT_START } from '@/constants/crew';
 
 interface CrewMember {
   id: string;
@@ -27,19 +28,47 @@ interface TimeEntryProps {
   onBack: () => void;
   selectedDate: Date;
   crewMembers: CrewMember[];
+  crewId: string | null;
 }
 
-export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeEntryProps) => {
+export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId }: TimeEntryProps) => {
   const convertTo24Hour = (time12h: string) => {
-    const [time, modifier] = time12h.split(' ');
-    let [hours, minutes] = time.split(':');
-    if (hours === '12') {
-      hours = '00';
+    if (!time12h) return '';
+    const match = time12h
+      .trim()
+      .toUpperCase()
+      .match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/);
+
+    if (!match) {
+      return time12h;
     }
-    if (modifier === 'PM') {
-      hours = (parseInt(hours, 10) + 12).toString();
+
+    const hours = parseInt(match[1], 10);
+    const minutes = match[2];
+    const period = match[3];
+
+    const normalizedHours = period === 'PM'
+      ? (hours % 12) + 12
+      : period === 'AM'
+        ? hours % 12
+        : hours;
+
+    return `${normalizedHours.toString().padStart(2, '0')}:${minutes}`;
+  };
+
+  const normalizeTo24Hour = (time: string) => {
+    if (!time) return '';
+    const trimmed = time.trim();
+    if (/\b(AM|PM)\b/i.test(trimmed)) {
+      return convertTo24Hour(trimmed.toUpperCase());
     }
-    return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    const match = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+    if (match) {
+      const hours = parseInt(match[1], 10);
+      const minutes = match[2];
+      return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    }
+    return trimmed;
   };
 
   const [timeEntries, setTimeEntries] = useState<Record<string, { startTime: string; endTime: string }>>({});
@@ -47,50 +76,70 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
 
   const [editIndividually, setEditIndividually] = useState(false);
   const [groupTimes, setGroupTimes] = useState<{ startTime: string; endTime: string }>({
-    startTime: '09:00',
-    endTime: '17:00'
+    startTime: DEFAULT_SHIFT_START,
+    endTime: DEFAULT_SHIFT_END,
   });
+
+  const buildDefaultEntries = () => crewMembers.reduce((acc, member) => {
+    acc[member.id] = {
+      startTime: normalizeTo24Hour(member.scheduledStart),
+      endTime: normalizeTo24Hour(member.scheduledEnd),
+    };
+    return acc;
+  }, {} as Record<string, { startTime: string; endTime: string }>);
 
   // Load existing time entries or initialize with scheduled times
   useEffect(() => {
     const loadTimeEntries = async () => {
+      setLoading(true);
+
+      if (crewMembers.length === 0) {
+        setTimeEntries({});
+        setLoading(false);
+        return;
+      }
+
+      if (!crewId) {
+        const fallbackEntries = buildDefaultEntries();
+        setTimeEntries(fallbackEntries);
+        const firstMemberEntry = fallbackEntries[crewMembers[0]?.id ?? ''];
+        if (firstMemberEntry) {
+          setGroupTimes({
+            startTime: firstMemberEntry.startTime,
+            endTime: firstMemberEntry.endTime,
+          });
+        }
+        setLoading(false);
+        return;
+      }
+
       try {
-        // Check if there are existing time entries for this date
         const { data: existingEntries, error } = await supabase
           .from('time_entries')
           .select('member_id, start_time, end_time')
           .eq('date', selectedDate.toISOString().split('T')[0])
-          .eq('crew_id', '8685dabc-746e-4fe8-90a3-c41035c79dc0');
+          .eq('crew_id', crewId);
 
         if (error) {
           console.error('Error loading existing time entries:', error);
         }
 
-        const entriesMap: Record<string, { startTime: string; endTime: string }> = {};
-        
-        // Initialize with existing entries or scheduled times
-        crewMembers.forEach(member => {
-          const existingEntry = existingEntries?.find(entry => entry.member_id === member.id);
-          
+        const entriesMap = buildDefaultEntries();
+
+        crewMembers.forEach((member) => {
+          const existingEntry = existingEntries?.find((entry) => entry.member_id === member.id);
+
           if (existingEntry) {
-            // Use existing time entry
             entriesMap[member.id] = {
-              startTime: existingEntry.start_time,
-              endTime: existingEntry.end_time,
-            };
-          } else {
-            // Use scheduled times as default
-            entriesMap[member.id] = {
-              startTime: convertTo24Hour(member.scheduledStart),
-              endTime: convertTo24Hour(member.scheduledEnd),
+              startTime: normalizeTo24Hour(existingEntry.start_time),
+              endTime: normalizeTo24Hour(existingEntry.end_time),
             };
           }
         });
 
         setTimeEntries(entriesMap);
-        
-        // Set group times based on first member's times
-        const firstMemberEntry = entriesMap[crewMembers[0]?.id];
+
+        const firstMemberEntry = entriesMap[crewMembers[0]?.id ?? ''];
         if (firstMemberEntry) {
           setGroupTimes({
             startTime: firstMemberEntry.startTime,
@@ -99,14 +148,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
         }
       } catch (error) {
         console.error('Error in loadTimeEntries:', error);
-        // Fallback to scheduled times
-        const fallbackEntries = crewMembers.reduce((acc, member) => {
-          acc[member.id] = {
-            startTime: convertTo24Hour(member.scheduledStart),
-            endTime: convertTo24Hour(member.scheduledEnd),
-          };
-          return acc;
-        }, {} as Record<string, { startTime: string; endTime: string }>);
+        const fallbackEntries = buildDefaultEntries();
         setTimeEntries(fallbackEntries);
       } finally {
         setLoading(false);
@@ -114,7 +156,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
     };
 
     loadTimeEntries();
-  }, [selectedDate, crewMembers]);
+  }, [selectedDate, crewMembers, crewId]);
 
   const updateTimeEntry = (crewId: string, field: 'startTime' | 'endTime', value: string) => {
     setTimeEntries(prev => ({
@@ -139,6 +181,26 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
     setTimeEntries(updatedEntries);
   };
 
+  const parseTimeStringToDate = (time: string) => {
+    if (!time) return null;
+    const [hoursStr, minutesStr] = time.split(':');
+    const hours = Number(hoursStr);
+    const minutes = Number(minutesStr);
+    if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+      return null;
+    }
+    const baseDate = new Date(selectedDate);
+    baseDate.setHours(hours, minutes, 0, 0);
+    return baseDate;
+  };
+
+  const formatPickerValue = (value: Date | null) => {
+    if (!value || !isValid(value)) {
+      return '';
+    }
+    return format(value, 'HH:mm');
+  };
+
   const calculateHours = (start: string, end: string) => {
     if (!start || !end) return 0;
     const startMinutes = parseInt(start.split(':')[0]) * 60 + parseInt(start.split(':')[1]);
@@ -155,6 +217,11 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
 
     if (!allValid) {
       toast.error('Please ensure all times are valid and end time is after start time.');
+      return;
+    }
+
+    if (!crewId) {
+      toast.error('Crew information is unavailable. Please try again later.');
       return;
     }
 
@@ -180,7 +247,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
         start_time: memberData.startTime,
         end_time: memberData.endTime,
         hours_regular: memberData.hours,
-        crew_id: '8685dabc-746e-4fe8-90a3-c41035c79dc0', // Use the real crew_id from database
+        crew_id: crewId,
         member_id: memberData.memberId, // Use the real member_id
         status: 'submitted'
       }));
@@ -211,7 +278,17 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
   if (loading) {
     return (
       <Layout title="Edit Work Hours" onBack={onBack}>
-        <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+        <Box
+          sx={{
+            p: 2,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '200px',
+            bgcolor: 'var(--theme-base-background-elevations-level-highest)',
+            borderRadius: 2,
+          }}
+        >
           <Typography>Loading existing time entries...</Typography>
         </Box>
       </Layout>
@@ -220,9 +297,14 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
 
   return (
     <Layout title="Edit Work Hours" onBack={onBack}>
-      <Box sx={{ p: 2 }}>
-        <Card sx={{ mb: 2, bgcolor: 'background.paper' }}>
-          <CardContent>
+      <Box
+        sx={{
+          p: 2,
+          bgcolor: 'var(--theme-base-background-elevations-level-highest)',
+          borderRadius: 2,
+        }}
+      >
+
             <Typography variant="h6" gutterBottom>
               {selectedDate.toLocaleDateString('en-US', { 
                 weekday: 'long', 
@@ -237,13 +319,28 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                 <Switch
                   checked={editIndividually}
                   onChange={(e) => setEditIndividually(e.target.checked)}
+                  sx={{
+                    '& .MuiSwitch-thumb': {
+                      backgroundColor: 'var(--core-lighthouse-colors-neutrals-gray-300)'
+                    },
+                    '& .MuiSwitch-track': {
+                      backgroundColor: 'var(--theme-base-text-default)',
+                      opacity: 0.4
+                    },
+                    '&.Mui-checked .MuiSwitch-thumb': {
+                      backgroundColor: 'var(--core-lighthouse-colors-neutrals-gray-300)'
+                    },
+                    '&.Mui-checked .MuiSwitch-track': {
+                      backgroundColor: 'var(--theme-base-text-default)',
+                      opacity: 0.6
+                    }
+                  }}
                 />
               }
               label="Edit individual times"
               sx={{ mb: 2 }}
             />
-          </CardContent>
-        </Card>
+
 
         {!editIndividually ? (
           <Card sx={{ mb: 2, bgcolor: 'background.paper' }}>
@@ -252,26 +349,36 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                 Group Time Entry
               </Typography>
               <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                <TextField
+                <TimePicker
                   label="Start Time"
-                  type="time"
-                  value={groupTimes.startTime}
-                  onChange={(e) => updateAllEntries('startTime', e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{ flex: 1 }}
+                  ampm={false}
+                  minutesStep={5}
+                  value={parseTimeStringToDate(groupTimes.startTime)}
+                  onChange={(date) => updateAllEntries('startTime', formatPickerValue(date))}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      InputLabelProps: { shrink: true }
+                    }
+                  }}
                 />
-                <TextField
+                <TimePicker
                   label="End Time"
-                  type="time"
-                  value={groupTimes.endTime}
-                  onChange={(e) => updateAllEntries('endTime', e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  sx={{ flex: 1 }}
+                  ampm={false}
+                  minutesStep={5}
+                  value={parseTimeStringToDate(groupTimes.endTime)}
+                  onChange={(date) => updateAllEntries('endTime', formatPickerValue(date))}
+                  slotProps={{
+                    textField: {
+                      fullWidth: true,
+                      InputLabelProps: { shrink: true }
+                    }
+                  }}
                 />
               </Box>
-              <Typography variant="body2" color="text.secondary">
-                Hours: {calculateHours(groupTimes.startTime, groupTimes.endTime).toFixed(1)} per person
-              </Typography>
+          <Typography variant="body2" sx={{ color: 'var(--theme-base-text-secondary)' }}>
+            Hours: {calculateHours(groupTimes.startTime, groupTimes.endTime).toFixed(1)} per person
+          </Typography>
             </CardContent>
           </Card>
         ) : (
@@ -283,26 +390,39 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers }: TimeE
                     {member.name}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 2, mb: 1 }}>
-                    <TextField
+                    <TimePicker
                       label="Start Time"
-                      type="time"
-                      size="small"
-                      value={timeEntries[member.id]?.startTime || ''}
-                      onChange={(e) => updateTimeEntry(member.id, 'startTime', e.target.value)}
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ flex: 1 }}
+                      ampm={false}
+                      minutesStep={5}
+                      value={parseTimeStringToDate(timeEntries[member.id]?.startTime || '')}
+                      onChange={(date) => updateTimeEntry(member.id, 'startTime', formatPickerValue(date))}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          size: 'small',
+                          InputLabelProps: { shrink: true }
+                        }
+                      }}
                     />
-                    <TextField
+                    <TimePicker
                       label="End Time"
-                      type="time"
-                      size="small"
-                      value={timeEntries[member.id]?.endTime || ''}
-                      onChange={(e) => updateTimeEntry(member.id, 'endTime', e.target.value)}
-                      InputLabelProps={{ shrink: true }}
-                      sx={{ flex: 1 }}
+                      ampm={false}
+                      minutesStep={5}
+                      value={parseTimeStringToDate(timeEntries[member.id]?.endTime || '')}
+                      onChange={(date) => updateTimeEntry(member.id, 'endTime', formatPickerValue(date))}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          size: 'small',
+                          InputLabelProps: { shrink: true }
+                        }
+                      }}
                     />
                   </Box>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'var(--theme-base-text-secondary)' }}
+                  >
                     Hours: {calculateHours(
                       timeEntries[member.id]?.startTime || '',
                       timeEntries[member.id]?.endTime || ''

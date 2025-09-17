@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { 
   Card, 
@@ -7,7 +7,6 @@ import {
   TextField, 
   Button, 
   Box, 
-  Grid,
   Alert,
   FormControlLabel,
   Switch
@@ -16,10 +15,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { toast } from 'react-toastify';
 import { supabase } from '@/integrations/supabase/client';
+import { useCrewData } from '@/hooks/useCrewData';
 
 const AdditionalDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { crewMembers, crewId } = useCrewData();
   
   // Get individual member hours from location state
   const memberHours = location.state?.memberHours || [];
@@ -47,6 +48,9 @@ const AdditionalDetails = () => {
   const [totalStandbyHours, setTotalStandbyHours] = useState('');
   
   const [notes, setNotes] = useState('');
+
+  const getCrewMemberName = (memberId: string) =>
+    crewMembers.find((member) => member.id === memberId)?.name ?? 'Unknown Member';
   
   const handleBack = () => navigate("/");
   
@@ -77,6 +81,11 @@ const AdditionalDetails = () => {
       }
     }
 
+    if (!crewId) {
+      toast.error('Crew information is unavailable. Please try again later.');
+      return;
+    }
+
     try {
       // Prepare breakdown data for database insertion
       const breakdownInserts: any[] = [];
@@ -93,7 +102,7 @@ const AdditionalDetails = () => {
             .select('id')
             .eq('member_id', member.memberId)
             .eq('date', today)
-            .eq('crew_id', '8685dabc-746e-4fe8-90a3-c41035c79dc0')
+            .eq('crew_id', crewId)
             .single();
 
           if (timeEntry) {
@@ -136,7 +145,7 @@ const AdditionalDetails = () => {
             .select('id')
             .eq('member_id', member.memberId)
             .eq('date', today)
-            .eq('crew_id', '8685dabc-746e-4fe8-90a3-c41035c79dc0')
+            .eq('crew_id', crewId)
             .single();
 
           if (timeEntry) {
@@ -203,7 +212,7 @@ const AdditionalDetails = () => {
           .update({ comments: notes })
           .in('member_id', memberIds)
           .eq('date', today)
-          .eq('crew_id', '8685dabc-746e-4fe8-90a3-c41035c79dc0');
+          .eq('crew_id', crewId);
       }
 
       toast.success("Details submitted successfully!");
@@ -292,13 +301,12 @@ const AdditionalDetails = () => {
                       <CardContent sx={{ py: 2 }}>
                         {/* Member Header */}
                         <Typography variant="subtitle1" gutterBottom>
-                          {member.memberId === '3751647d-f0ae-4d62-a0a1-9a0bd3dbc2b1' ? 'David Brown' :
-                           member.memberId === '47e34e83-b887-4d79-82a9-ffc1f63f5e17' ? 'John Smith' :
-                           member.memberId === 'c648a699-cf2a-4ac7-bce8-19883a0db42b' ? 'Mike Johnson' :
-                           member.memberId === '54704459-cf20-4137-9f6c-0c58ab8ac8b9' ? 'Sarah Williams' :
-                           'Unknown Member'} - {member.hours.toFixed(1)} hours
+                          {getCrewMemberName(member.memberId)} - {member.hours.toFixed(1)} hours
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        <Typography
+                          variant="body2"
+                          sx={{ mb: 2, color: 'var(--theme-base-text-secondary)' }}
+                        >
                           Categorized: {getMemberTotalCategorized(member.memberId).toFixed(1)} | Remaining: {getMemberRemainingHours(member).toFixed(1)}
                         </Typography>
                         {isMemberOverLimit(member) && (
@@ -311,7 +319,10 @@ const AdditionalDetails = () => {
                         <Typography variant="body2" color="text.primary" gutterBottom>
                           Hours Breakdown
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ display: 'block', mb: 2, color: 'var(--theme-base-text-secondary)' }}
+                        >
                           Optional - Cannot exceed {member.hours.toFixed(1)} logged hours
                         </Typography>
                         
@@ -383,7 +394,7 @@ const AdditionalDetails = () => {
                     </Card>
                   ))
                 ) : (
-                  <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography sx={{ textAlign: 'center', py: 4, color: 'var(--theme-base-text-secondary)' }}>
                     No crew member hours data available
                   </Typography>
                 )}
@@ -396,7 +407,7 @@ const AdditionalDetails = () => {
                   <Typography variant="h6" color="text.primary" gutterBottom>
                     Total Crew Hours: {totalHours.toFixed(1)}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" sx={{ color: 'var(--theme-base-text-secondary)' }}>
                     Categorized: {getTotalCategorized().toFixed(1)} | Remaining: {getRemainingHours().toFixed(1)}
                   </Typography>
                   {isOverLimit && (
@@ -411,7 +422,10 @@ const AdditionalDetails = () => {
                   <Typography variant="h6" color="text.primary" gutterBottom>
                     Hours Breakdown
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ display: 'block', mb: 2, color: 'var(--theme-base-text-secondary)' }}
+                  >
                     Optional - Cannot exceed {totalHours.toFixed(1)} total hours
                   </Typography>
                   

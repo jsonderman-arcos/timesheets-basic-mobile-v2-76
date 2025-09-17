@@ -48,9 +48,9 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
       height: '100dvh', 
       display: 'flex', 
       flexDirection: 'column',
-      bgcolor: 'background.default',
+      bgcolor: 'var(--theme-base-background-elevations-level-4)',
       position: 'relative',
-      paddingTop: 'env(safe-area-inset-top)',
+      paddingTop: 'calc(2 * env(safe-area-inset-top))',
       paddingLeft: 'env(safe-area-inset-left)',
       paddingRight: 'env(safe-area-inset-right)',
       paddingBottom: 'env(safe-area-inset-bottom)'
@@ -60,7 +60,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
         position="static" 
         elevation={0}
         sx={{ 
-          bgcolor: 'background.paper',
+          bgcolor: 'var(--theme-base-background-elevations-level-4)',
           borderBottom: '1px solid',
           borderColor: 'divider'
         }}
@@ -74,8 +74,10 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
             <IconButton 
               edge="start" 
               onClick={onBack}
-              className="text-white"
-              sx={{ mr: 1 }}
+              sx={{ 
+                mr: 1,
+                color: 'var(--theme-base-primary-contrast-text)'
+              }}
             >
               <ArrowBack />
             </IconButton>
@@ -83,10 +85,11 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           <Typography 
             variant="h6" 
             component="h1" 
-            className="text-contrast-text text-center"
             sx={{ 
               flexGrow: 1, 
-              fontWeight: 600
+              fontWeight: 600,
+              textAlign: 'center',
+              color: 'var(--theme-base-primary-contrast-text)'
             }}
           >
             {title}
@@ -94,7 +97,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
           <IconButton 
             edge="end" 
             onClick={() => navigate("/account")}
-            sx={{ color: 'white' }}
+            sx={{ color: 'var(--theme-base-primary-contrast-text)' }}
           >
             <Person />
           </IconButton>
@@ -106,8 +109,11 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
         component="main"
         sx={{ 
           flex: 1, 
-          overflow: 'auto',
-          pb: 'calc(80px + env(safe-area-inset-bottom))' // Space for FAB with safe area
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+          pb: 'calc(80px + env(safe-area-inset-bottom))', // Space for FAB with safe area
+          bgcolor: 'var(--theme-base-background-elevations-level-4)'
         }}
       >
         {children}
@@ -155,7 +161,7 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
             bottom: 0,
             left: 0,
             right: 0,
-            bgcolor: 'background.paper',
+            bgcolor: 'var(--core-lighthouse-colors-neutrals-gray-900)',
             borderRadius: '16px 16px 0 0',
             boxShadow: 24,
             p: 3,
@@ -189,28 +195,40 @@ export const Layout = ({ children, title, onBack }: LayoutProps) => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       p: 3,
-                      bgcolor: 'background.default',
+                      bgcolor: 'var(--core-lighthouse-colors-neutrals-white-alpha-42)',
                       border: '1px solid',
                       borderColor: 'divider',
                       borderRadius: 2,
                       cursor: 'pointer',
                       transition: 'all 0.2s',
                       '&:hover': {
-                        bgcolor: 'action.hover',
+                        bgcolor: 'var(--core-lighthouse-colors-neutrals-white-alpha-90)',
                         transform: 'translateY(-2px)',
-                        boxShadow: 2
+                        boxShadow: 2,
+                        '& .menu-item-icon, & .menu-item-text': {
+                          color: 'var(--theme-base-primary-main)'
+                        }
                       }
                     }}
                   >
-                    <Box sx={{ color: 'primary.main', mb: 1 }}>
+                    <Box
+                      className="menu-item-icon"
+                      sx={{
+                        color: 'text.primary',
+                        mb: 1,
+                        transition: 'color 0.2s ease'
+                      }}
+                    >
                       {item.icon}
                     </Box>
                     <Typography 
                       variant="body2" 
-                      sx={{ 
+                      className="menu-item-text"
+                      sx={{
                         color: 'text.primary',
                         textAlign: 'center',
-                        fontWeight: 500
+                        fontWeight: 500,
+                        transition: 'color 0.2s ease'
                       }}
                     >
                       {item.text}
