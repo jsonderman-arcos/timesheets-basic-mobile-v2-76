@@ -241,6 +241,10 @@ export const ScheduleVerification = () => {
 
   const primaryCrewMember = crewMembers[0];
 
+  const handleBackToDashboard = useCallback(() => {
+    navigate('/');
+  }, [navigate]);
+
   const handleTimeSubmit = (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean) => {
     navigate('/additional-details', { 
       state: { memberHours, editedIndividually }
@@ -257,7 +261,7 @@ export const ScheduleVerification = () => {
 
   if (isCompleted) {
     return (
-      <Layout title="Schedule Verification">
+      <Layout title="Schedule Verification" onBack={handleBackToDashboard}>
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
