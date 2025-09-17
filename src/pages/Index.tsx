@@ -4,5 +4,4 @@ const Index = () => {
   return <ScheduleVerification />;
 };
 
-
 export default Index;
