@@ -61,7 +61,8 @@ const AdditionalDetails = () => {
     }
 
     try {
-      const today = new Date().toISOString().split('T')[0];
+      const selectedDate = location.state?.selectedDate;
+      const selectedDateStr = selectedDate ? new Date(selectedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
       const timeEntriesToInsert: any[] = [];
       const breakdownInserts: any[] = [];
 
@@ -83,7 +84,7 @@ const AdditionalDetails = () => {
         const timeEntry = {
           crew_id: crewId,
           member_id: member.id,
-          date: today,
+          date: selectedDateStr,
           start_time: '08:00:00',
           end_time: memberHours === 8 ? '16:00:00' : `${8 + Math.floor(memberHours)}:${Math.round((memberHours % 1) * 60).toString().padStart(2, '0')}:00`,
           working_hours: memberHours,
