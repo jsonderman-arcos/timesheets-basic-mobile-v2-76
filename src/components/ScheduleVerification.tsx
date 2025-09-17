@@ -18,7 +18,8 @@ import {
   ChevronLeft,
   ChevronRight,
   CalendarToday,
-  Edit
+  Edit,
+  Close
 } from '@mui/icons-material';
 import { TimeEntry } from './TimeEntry';
 import { Layout } from './Layout';
@@ -26,6 +27,7 @@ import { toast } from 'react-toastify';
 import { supabase } from '@/integrations/supabase/client';
 import { useCrewData } from '@/hooks/useCrewData';
 import { DEFAULT_SHIFT_END, DEFAULT_SHIFT_START } from '@/constants/crew';
+import { format } from 'date-fns';
 
 const formatTime24Hour = (time: string | null | undefined) => {
   if (!time) return '';
@@ -74,9 +76,10 @@ export const ScheduleVerification = () => {
   }, [crewError]);
 
   const checkExistingTimeEntries = useCallback(async (crewIdentifier: string) => {
-    console.log('Checking existing time entries for date:', selectedDate.toISOString().split('T')[0]);
+    const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    console.log('Checking existing time entries for date:', dateKey);
     try {
-      const dateStr = selectedDate.toISOString().split('T')[0];
+      const dateStr = dateKey;
       
       // Check for time entries for this date
       const { data: entries, error: entriesError } = await supabase
@@ -227,7 +230,12 @@ export const ScheduleVerification = () => {
     }));
 
     navigate('/additional-details', {
-      state: { memberHours, editedIndividually: false },
+      state: {
+        memberHours,
+        editedIndividually: false,
+        selectedDate: selectedDate.toISOString(),
+        notes: ''
+      },
     });
   };
 
@@ -247,9 +255,18 @@ export const ScheduleVerification = () => {
     navigate('/', { replace: true });
   }, [navigate]);
 
-  const handleTimeSubmit = (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean) => {
+  const handleTimeSubmit = (
+    memberHours: { memberId: string; hours: number }[],
+    editedIndividually: boolean,
+    notes: string
+  ) => {
     navigate('/additional-details', { 
-      state: { memberHours, editedIndividually }
+      state: {
+        memberHours,
+        editedIndividually,
+        selectedDate: selectedDate.toISOString(),
+        notes
+      }
     });
   };
 
@@ -276,8 +293,21 @@ export const ScheduleVerification = () => {
             maxWidth: 400,
             textAlign: 'center',
             bgcolor: 'background.paper',
-            boxShadow: 3
+            boxShadow: 3,
+            position: 'relative'
           }}>
+            <IconButton
+              aria-label="Close"
+              onClick={handleBackToDashboard}
+              sx={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                color: 'var(--theme-base-text-secondary)'
+              }}
+            >
+              <Close />
+            </IconButton>
             <CardContent sx={{ p: 4 }}>
               <CheckCircle sx={{ fontSize: 64, color: 'success.main', mb: 2 }} />
               <Typography variant="h5" fontWeight="bold" color="text.primary" gutterBottom>
@@ -650,18 +680,20 @@ export const ScheduleVerification = () => {
           </Typography>
           
           <Box sx={{ space: 1.5, mb: 3 }}>
-            <Button 
-              variant="contained"
-              size="large"
-              fullWidth
-              color="success"
-              startIcon={<CheckCircle />}
-              onClick={handleConfirmSchedule}
-              sx={{ mb: 3, p:2 }}
-              disabled={isBusy}
-            >
-              Correct. Submit the hours.
-            </Button>
+            {!hasTimeEntries && (
+              <Button 
+                variant="contained"
+                size="large"
+                fullWidth
+                color="success"
+                startIcon={<CheckCircle />}
+                onClick={handleConfirmSchedule}
+                sx={{ mb: 3, p:2 }}
+                disabled={isBusy}
+              >
+                Correct. Submit the hours.
+              </Button>
+            )}
             
             <Button 
               variant="outlined"

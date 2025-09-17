@@ -6,7 +6,8 @@ import {
   Button,
   Box,
   Switch,
-  FormControlLabel
+  FormControlLabel,
+  TextField
 } from '@mui/material';
 import { Save } from '@mui/icons-material';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -24,7 +25,7 @@ interface CrewMember {
 }
 
 interface TimeEntryProps {
-  onSubmit: (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean) => void;
+  onSubmit: (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean, notes: string) => void;
   onBack: () => void;
   selectedDate: Date;
   crewMembers: CrewMember[];
@@ -79,6 +80,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
     startTime: DEFAULT_SHIFT_START,
     endTime: DEFAULT_SHIFT_END,
   });
+  const [notes, setNotes] = useState('');
 
   const buildDefaultEntries = () => crewMembers.reduce((acc, member) => {
     acc[member.id] = {
@@ -95,6 +97,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
 
       if (crewMembers.length === 0) {
         setTimeEntries({});
+        setNotes('');
         setLoading(false);
         return;
       }
@@ -109,15 +112,18 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
             endTime: firstMemberEntry.endTime,
           });
         }
+        setNotes('');
         setLoading(false);
         return;
       }
 
       try {
+        const dateKey = format(selectedDate, 'yyyy-MM-dd');
+
         const { data: existingEntries, error } = await supabase
           .from('time_entries')
-          .select('member_id, start_time, end_time')
-          .eq('date', selectedDate.toISOString().split('T')[0])
+          .select('member_id, start_time, end_time, comments')
+          .eq('date', dateKey)
           .eq('crew_id', crewId);
 
         if (error) {
@@ -125,6 +131,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
         }
 
         const entriesMap = buildDefaultEntries();
+        let loadedNotes = '';
 
         crewMembers.forEach((member) => {
           const existingEntry = existingEntries?.find((entry) => entry.member_id === member.id);
@@ -134,10 +141,15 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
               startTime: normalizeTo24Hour(existingEntry.start_time),
               endTime: normalizeTo24Hour(existingEntry.end_time),
             };
+
+            if (!loadedNotes && existingEntry.comments) {
+              loadedNotes = existingEntry.comments;
+            }
           }
         });
 
         setTimeEntries(entriesMap);
+        setNotes(loadedNotes);
 
         const firstMemberEntry = entriesMap[crewMembers[0]?.id ?? ''];
         if (firstMemberEntry) {
@@ -150,6 +162,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
         console.error('Error in loadTimeEntries:', error);
         const fallbackEntries = buildDefaultEntries();
         setTimeEntries(fallbackEntries);
+        setNotes('');
       } finally {
         setLoading(false);
       }
@@ -231,6 +244,25 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
     }
 
     try {
+      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+
+      const memberIds = crewMembers.map(member => member.id);
+
+      if (memberIds.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('time_entries')
+          .delete()
+          .eq('date', dateStr)
+          .eq('crew_id', crewId)
+          .in('member_id', memberIds);
+
+        if (deleteError) {
+          console.error('Error clearing existing time entries:', deleteError);
+          toast.error('Failed to replace existing time entries. Please try again.');
+          return;
+        }
+      }
+
       // Prepare member hours data with real crew member IDs
       const memberHours = crewMembers.map(member => {
         const entry = timeEntries[member.id];
@@ -246,20 +278,24 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
         };
       });
 
+      const trimmedNotes = notes.trim();
+
       // Save to database using the real crew_id
       const timeEntryInserts = memberHours.map(memberData => ({
-        date: selectedDate.toISOString().split('T')[0],
+        date: dateStr,
         start_time: memberData.startTime,
         end_time: memberData.endTime,
         hours_regular: memberData.hours,
         crew_id: crewId,
         member_id: memberData.memberId, // Use the real member_id
-        status: 'submitted'
+        status: 'submitted',
+        submitted_at: new Date().toISOString(),
+        comments: trimmedNotes || null
       }));
 
       const { error } = await supabase
         .from('time_entries')
-        .insert(timeEntryInserts);
+        .insert(timeEntryInserts, { returning: 'minimal' });
 
       if (error) {
         console.error('Error saving time entries:', error);
@@ -268,7 +304,11 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
       }
 
       toast.success('Time entries saved successfully!');
-      onSubmit(memberHours.map(m => ({ memberId: m.memberId, hours: m.hours })), editIndividually);
+      onSubmit(
+        memberHours.map(m => ({ memberId: m.memberId, hours: m.hours })),
+        editIndividually,
+        trimmedNotes
+      );
     } catch (error) {
       console.error('Error saving time entries:', error);
       toast.error('Failed to save time entries. Please try again.');
@@ -438,6 +478,17 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
             ))}
           </Box>
         )}
+
+        <TextField
+          label="Notes"
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
+          fullWidth
+          multiline
+          minRows={3}
+          placeholder="Add any notes about today's hours"
+          sx={{ mt: 3 }}
+        />
 
         <Button
           variant="contained"

@@ -11,6 +11,7 @@ import {
   FormControlLabel,
   Switch
 } from "@mui/material";
+import { format } from 'date-fns';
 import { useNavigate, useLocation } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { toast } from 'react-toastify';
@@ -21,9 +22,16 @@ const AdditionalDetails = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { crewMembers, crewId } = useCrewData();
+
+  const selectedDateParam = location.state?.selectedDate as string | Date | undefined;
+  const selectedDate = selectedDateParam ? new Date(selectedDateParam) : new Date();
+  const resolvedDate = Number.isNaN(selectedDate.getTime()) ? new Date() : selectedDate;
+  const selectedDateKey = format(resolvedDate, 'yyyy-MM-dd');
   
   // Get individual member hours from location state
   const memberHours = location.state?.memberHours || [];
+  
+  const initialNotes = typeof location.state?.notes === 'string' ? location.state.notes : '';
   
   // State for controlling individual vs crew editing mode
   const [editedIndividually, setEditedIndividually] = useState(false);
@@ -47,7 +55,7 @@ const AdditionalDetails = () => {
   const [totalTravelingHours, setTotalTravelingHours] = useState('');
   const [totalStandbyHours, setTotalStandbyHours] = useState('');
   
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState(initialNotes);
 
   const getCrewMemberName = (memberId: string) =>
     crewMembers.find((member) => member.id === memberId)?.name ?? 'Unknown Member';
@@ -89,7 +97,7 @@ const AdditionalDetails = () => {
     try {
       // Prepare breakdown data for database insertion
       const breakdownInserts: any[] = [];
-      const today = new Date().toISOString().split('T')[0];
+      const dateForEntries = selectedDateKey;
 
       if (editedIndividually) {
         // Individual breakdowns - use each member's specific breakdown
@@ -101,7 +109,7 @@ const AdditionalDetails = () => {
             .from('time_entries')
             .select('id')
             .eq('member_id', member.memberId)
-            .eq('date', today)
+            .eq('date', dateForEntries)
             .eq('crew_id', crewId)
             .single();
 
@@ -144,7 +152,7 @@ const AdditionalDetails = () => {
             .from('time_entries')
             .select('id')
             .eq('member_id', member.memberId)
-            .eq('date', today)
+            .eq('date', dateForEntries)
             .eq('crew_id', crewId)
             .single();
 
@@ -211,7 +219,7 @@ const AdditionalDetails = () => {
           .from('time_entries')
           .update({ comments: notes })
           .in('member_id', memberIds)
-          .eq('date', today)
+          .eq('date', dateForEntries)
           .eq('crew_id', crewId);
       }
 
