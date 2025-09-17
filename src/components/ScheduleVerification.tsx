@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
+import { useState, useEffect, useCallback, useMemo, type MouseEvent as ReactMouseEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Card,
@@ -192,6 +192,11 @@ export const ScheduleVerification = () => {
     setDatePickerAnchor(null);
   };
 
+  const isSelectedDateToday = useMemo(() => {
+    const today = new Date();
+    return selectedDate.toDateString() === today.toDateString();
+  }, [selectedDate]);
+
   const getCrewMemberName = useCallback(
     (memberId: string) => crewMembers.find((member) => member.id === memberId)?.name ?? 'Unknown Member',
     [crewMembers]
@@ -376,7 +381,8 @@ export const ScheduleVerification = () => {
           <IconButton 
             onClick={goToNextDay}
             size="small"
-            sx={{ color: 'var(--theme-base-text-secondary)' }}
+            sx={{ color: isSelectedDateToday ? 'text.disabled' : 'var(--theme-base-text-secondary)' }}
+            disabled={isSelectedDateToday}
           >
             <ChevronRight />
           </IconButton>
@@ -609,7 +615,8 @@ export const ScheduleVerification = () => {
           <IconButton 
             onClick={goToNextDay}
             size="small"
-            sx={{ color: 'var(--theme-base-text-secondary)' }}
+            sx={{ color: isSelectedDateToday ? 'text.disabled' : 'var(--theme-base-text-secondary)' }}
+            disabled={isSelectedDateToday}
           >
             <ChevronRight />
           </IconButton>
