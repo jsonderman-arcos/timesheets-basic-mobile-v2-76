@@ -8,7 +8,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
-import { muiThemeJson } from 'arcos-harmony-design-system';
+import muiThemeJson from 'arcos-harmony-design-system/theme/mui-theme.json';
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdditionalDetails from "./pages/AdditionalDetails";
