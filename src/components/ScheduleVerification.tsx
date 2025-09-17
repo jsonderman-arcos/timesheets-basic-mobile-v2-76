@@ -242,7 +242,7 @@ export const ScheduleVerification = () => {
     }));
 
     navigate('/additional-details', {
-      state: { memberHours, editedIndividually: false },
+      state: { memberHours, editedIndividually: false, selectedDate: selectedDate.toISOString() },
     });
   };
 
@@ -258,7 +258,7 @@ export const ScheduleVerification = () => {
 
   const handleTimeSubmit = (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean) => {
     navigate('/additional-details', { 
-      state: { memberHours, editedIndividually }
+      state: { memberHours, editedIndividually, selectedDate: selectedDate.toISOString() }
     });
   };
 

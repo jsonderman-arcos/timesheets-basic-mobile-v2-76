@@ -22,8 +22,9 @@ const AdditionalDetails = () => {
   const location = useLocation();
   const { crewMembers, crewId } = useCrewData();
   
-  // Get individual member hours from location state
+  // Get individual member hours and selected date from location state
   const memberHours = location.state?.memberHours || [];
+  const selectedDate = location.state?.selectedDate ? new Date(location.state.selectedDate) : new Date();
   
   // State for controlling individual vs crew editing mode
   const [editedIndividually, setEditedIndividually] = useState(false);
@@ -61,8 +62,7 @@ const AdditionalDetails = () => {
     }
 
     try {
-      const selectedDate = location.state?.selectedDate;
-      const selectedDateStr = selectedDate ? new Date(selectedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+      const selectedDateStr = selectedDate.toISOString().split('T')[0];
       const timeEntriesToInsert: any[] = [];
       const breakdownInserts: any[] = [];
 
