@@ -29,7 +29,7 @@ const Account = () => {
   const { loggedInMember, crewName } = useCrewData();
 
   const handleBack = () => {
-    navigate(-1);
+    navigate('/');
   };
 
   const accountMenuItems = [
