@@ -21,13 +21,10 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      onwarn(warning, warn) {
-        // Suppress warnings about missing optional dependencies
-        if (warning.code === 'MODULE_NOT_FOUND' && warning.message.includes('@rollup/rollup-linux-x64-gnu')) {
-          return;
-        }
-        warn(warning);
-      }
+      external: ['@rollup/rollup-linux-x64-gnu']
     }
+  },
+  esbuild: {
+    target: 'es2020'
   }
 }));
