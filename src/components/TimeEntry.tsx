@@ -251,22 +251,6 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
 
     try {
       const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      const memberIds = crewMembers.map((member) => member.id);
-
-      if (memberIds.length > 0) {
-        const { error: deleteError } = await supabase
-          .from('time_entries')
-          .delete()
-          .eq('date', dateStr)
-          .eq('crew_id', crewId)
-          .in('member_id', memberIds);
-
-        if (deleteError) {
-          console.error('Error clearing existing time entries:', deleteError);
-          toast.error('Failed to replace existing time entries. Please try again.');
-          return;
-        }
-      }
 
       const memberHours = crewMembers.map((member) => {
         const entry = timeEntries[member.id];
@@ -284,26 +268,79 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
 
       const trimmedNotes = notes.trim();
 
-      const timeEntryInserts = memberHours.map((memberData) => ({
-        date: dateStr,
-        start_time: memberData.startTime,
-        end_time: memberData.endTime,
-        hours_regular: memberData.hours,
-        crew_id: crewId,
-        member_id: memberData.memberId,
-        status: 'submitted',
-        submitted_at: new Date().toISOString(),
-        comments: trimmedNotes || null,
-      }));
-
-      const { error } = await supabase
+      const { data: existingEntries, error: fetchError } = await supabase
         .from('time_entries')
-        .insert(timeEntryInserts, { returning: 'minimal' });
+        .select('id, member_id')
+        .eq('date', dateStr)
+        .eq('crew_id', crewId);
 
-      if (error) {
-        console.error('Error saving time entries:', error);
-        toast.error('Failed to save time entries. Please try again.');
+      if (fetchError) {
+        console.error('Error checking existing time entries:', fetchError);
+        toast.error('Failed to check existing time entries. Please try again.');
         return;
+      }
+
+      const existingMemberIds = existingEntries?.map((entry) => entry.member_id) ?? [];
+      
+      // Separate new and existing entries
+      const newEntries = memberHours
+        .filter(({ memberId }) => !existingMemberIds.includes(memberId))
+        .map(memberData => ({
+          date: dateStr,
+          start_time: memberData.startTime,
+          end_time: memberData.endTime,
+          hours_regular: memberData.hours,
+          crew_id: crewId,
+          member_id: memberData.memberId,
+          status: 'submitted',
+          comments: trimmedNotes || null,
+          submitted_at: new Date().toISOString(),
+          submitted_by: crewId
+        }));
+
+      const updateMemberIds = memberHours
+        .filter(({ memberId }) => existingMemberIds.includes(memberId))
+        .map(({ memberId }) => memberId);
+
+      // Insert new entries if any
+      if (newEntries.length > 0) {
+        const { error: insertError } = await supabase
+          .from('time_entries')
+          .insert(newEntries, { returning: 'minimal' });
+        
+        if (insertError) {
+          console.error('Error inserting time entries:', insertError);
+          toast.error('Failed to save new time entries. Please try again.');
+          return;
+        }
+      }
+
+      // Update existing entries if any
+      if (updateMemberIds.length > 0) {
+        for (const memberId of updateMemberIds) {
+          const memberData = memberHours.find(m => m.memberId === memberId);
+          if (memberData) {
+            const { error: updateError } = await supabase
+              .from('time_entries')
+              .update({ 
+                comments: trimmedNotes || null,
+                start_time: memberData.startTime,
+                end_time: memberData.endTime,
+                hours_regular: memberData.hours,
+                submitted_at: new Date().toISOString(),
+                submitted_by: crewId
+              })
+              .eq('member_id', memberId)
+              .eq('date', dateStr)
+              .eq('crew_id', crewId);
+              
+            if (updateError) {
+              console.error('Error updating time entry:', updateError);
+              toast.error('Failed to update existing time entries. Please try again.');
+              return;
+            }
+          }
+        }
       }
 
       toast.success('Time entries saved successfully!');
