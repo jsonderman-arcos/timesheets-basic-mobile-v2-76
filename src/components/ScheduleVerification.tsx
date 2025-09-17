@@ -248,7 +248,7 @@ export const ScheduleVerification = () => {
         memberHours,
         editedIndividually: false,
         selectedDate: selectedDate.toISOString(),
-        notes: ''
+        notes: '',
       },
     });
   };
@@ -274,13 +274,13 @@ export const ScheduleVerification = () => {
     editedIndividually: boolean,
     notes: string
   ) => {
-    navigate('/additional-details', { 
+    navigate('/additional-details', {
       state: {
         memberHours,
         editedIndividually,
         selectedDate: selectedDate.toISOString(),
-        notes
-      }
+        notes,
+      },
     });
   };
 
