@@ -455,7 +455,12 @@ export const ScheduleVerification = () => {
             <Box sx={{ display: 'flex', gap: 4, mb: 3, justifyContent: 'center' }}>
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" fontWeight="bold" color="primary.main">
-                  {timeEntries.reduce((total, entry) => total + parseFloat(entry.hours_regular), 0).toFixed(1)}
+                  {timeEntries.reduce((total, entry) => {
+                    const working = parseFloat(entry.hours_working || '0');
+                    const traveling = parseFloat(entry.hours_traveling || '0');
+                    const standby = parseFloat(entry.hours_standby || '0');
+                    return total + working + traveling + standby;
+                  }, 0).toFixed(1)}
                 </Typography>
                 <Typography variant="body1" fontWeight="medium" sx={{ color: 'var(--theme-base-text-secondary)' }}>
                   Total Hours Logged

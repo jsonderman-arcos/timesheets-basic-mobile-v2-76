@@ -21,7 +21,10 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     rollupOptions: {
-      external: (id) => id.includes('@rollup/rollup-linux-x64-gnu')
+      external: ['@rollup/rollup-linux-x64-gnu'],
+      output: {
+        manualChunks: undefined
+      }
     }
   }
 }));
