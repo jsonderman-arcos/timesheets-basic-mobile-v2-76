@@ -484,9 +484,9 @@ export const ScheduleVerification = () => {
               <Box sx={{ textAlign: 'center' }}>
                 <Typography variant="h3" fontWeight="bold" color="primary.main">
                   {timeEntries.reduce((total, entry) => {
-                    const working = parseFloat(entry.hours_working || '0');
-                    const traveling = parseFloat(entry.hours_traveling || '0');
-                    const standby = parseFloat(entry.hours_standby || '0');
+                    const working = parseFloat(entry.working_hours || '0');
+                    const traveling = parseFloat(entry.traveling_hours || '0');
+                    const standby = parseFloat(entry.standby_hours || '0');
                     return total + working + traveling + standby;
                   }, 0).toFixed(1)}
                 </Typography>
