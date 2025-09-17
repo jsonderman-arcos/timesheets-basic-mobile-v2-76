@@ -65,20 +65,54 @@ const AdditionalDetails = () => {
       const selectedDateStr = selectedDate.toISOString().split('T')[0];
       const timeEntriesToInsert: any[] = [];
       const breakdownInserts: any[] = [];
+      const memberHoursMap = new Map<string, number>(
+        memberHours.map((member: any) => [member.memberId, member.hours])
+      );
 
       // Create new time entries for each crew member
       for (const member of crewMembers) {
-        let memberHours = 8; // Default 8 hours
+        const scheduledHours = memberHoursMap.get(member.id) ?? 8;
+
+        let inputWorkingHours = 0;
+        let inputTravelingHours = 0;
+        let inputStandbyHours = 0;
         
         // If edited individually, use specific member breakdown, otherwise use totals
         if (editedIndividually) {
           const breakdown = memberBreakdowns[member.id] || { workingHours: '0', travelingHours: '0', standbyHours: '0' };
-          memberHours = parseFloat(breakdown.workingHours || '0') + 
-                       parseFloat(breakdown.travelingHours || '0') + 
-                       parseFloat(breakdown.standbyHours || '0');
+          inputWorkingHours = parseFloat(breakdown.workingHours || '0');
+          inputTravelingHours = parseFloat(breakdown.travelingHours || '0');
+          inputStandbyHours = parseFloat(breakdown.standbyHours || '0');
         } else {
-          memberHours = getTotalCategorized() || 8;
+          inputWorkingHours = parseFloat(totalWorkingHours || '0');
+          inputTravelingHours = parseFloat(totalTravelingHours || '0');
+          inputStandbyHours = parseFloat(totalStandbyHours || '0');
         }
+
+        const hasCategorizedInput =
+          inputWorkingHours > 0 || inputTravelingHours > 0 || inputStandbyHours > 0;
+
+        let workingHoursValue = inputWorkingHours;
+        let travelingHoursValue = inputTravelingHours;
+        let standbyHoursValue = inputStandbyHours;
+
+        if (!hasCategorizedInput) {
+          workingHoursValue = scheduledHours;
+          travelingHoursValue = 0;
+          standbyHoursValue = 0;
+        }
+
+        const memberTotalHours = workingHoursValue + travelingHoursValue + standbyHoursValue;
+        const endHourFloat = 8 + memberTotalHours;
+        let endHour = Math.floor(endHourFloat);
+        let endMinutes = Math.round((endHourFloat - endHour) * 60);
+
+        if (endMinutes === 60) {
+          endHour += 1;
+          endMinutes = 0;
+        }
+
+        const endTime = `${endHour.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}:00`;
 
         // Create time entry
         const timeEntry = {
@@ -86,10 +120,11 @@ const AdditionalDetails = () => {
           member_id: member.id,
           date: selectedDateStr,
           start_time: '08:00:00',
-          end_time: memberHours === 8 ? '16:00:00' : `${8 + Math.floor(memberHours)}:${Math.round((memberHours % 1) * 60).toString().padStart(2, '0')}:00`,
-          working_hours: memberHours,
-          traveling_hours: 0,
-          standby_hours: 0,
+          end_time: endTime,
+          working_hours: workingHoursValue,
+          traveling_hours: travelingHoursValue,
+          standby_hours: standbyHoursValue,
+          hours_regular: memberTotalHours,
           status: 'submitted',
           comments: notes || null,
           submitted_by: null, // Will be set when auth is implemented
@@ -147,30 +182,34 @@ const AdditionalDetails = () => {
             }
           } else {
             // Group breakdown - same for all members
-            if (parseFloat(totalWorkingHours || '0') > 0) {
+            const groupWorkingHours = parseFloat(totalWorkingHours || '0');
+            const groupTravelingHours = parseFloat(totalTravelingHours || '0');
+            const groupStandbyHours = parseFloat(totalStandbyHours || '0');
+
+            if (groupWorkingHours > 0) {
               breakdownInserts.push({
                 time_entry_id: entry.id,
                 member_id: entry.member_id,
                 breakdown_type: 'working',
-                hours: parseFloat(totalWorkingHours),
+                hours: groupWorkingHours,
                 description: notes || null
               });
             }
-            if (parseFloat(totalTravelingHours || '0') > 0) {
+            if (groupTravelingHours > 0) {
               breakdownInserts.push({
                 time_entry_id: entry.id,
                 member_id: entry.member_id,
                 breakdown_type: 'traveling',
-                hours: parseFloat(totalTravelingHours),
+                hours: groupTravelingHours,
                 description: notes || null
               });
             }
-            if (parseFloat(totalStandbyHours || '0') > 0) {
+            if (groupStandbyHours > 0) {
               breakdownInserts.push({
                 time_entry_id: entry.id,
                 member_id: entry.member_id,
                 breakdown_type: 'standby',
-                hours: parseFloat(totalStandbyHours),
+                hours: groupStandbyHours,
                 description: notes || null
               });
             }
@@ -250,13 +289,7 @@ const AdditionalDetails = () => {
       </Helmet>
 
       <Box sx={{ p: 2, display: 'flex', justifyContent: 'center', minHeight: '100%' }}>
-        <Card sx={{ 
-          width: '100%', 
-          maxWidth: 400,
-          bgcolor: 'background.paper',
-          boxShadow: 3
-        }}>
-          <CardContent sx={{ p: 3 }}>
+
             <FormControlLabel
               control={
                 <Switch
@@ -517,8 +550,7 @@ const AdditionalDetails = () => {
             >
               Submit
             </Button>
-          </CardContent>
-        </Card>
+        
       </Box>
     </Layout>
   );
