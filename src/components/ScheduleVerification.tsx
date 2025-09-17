@@ -242,7 +242,9 @@ export const ScheduleVerification = () => {
   const primaryCrewMember = crewMembers[0];
 
   const handleBackToDashboard = useCallback(() => {
-    navigate('/');
+    setIsCompleted(false);
+    setShowTimeEntry(false);
+    navigate('/', { replace: true });
   }, [navigate]);
 
   const handleTimeSubmit = (memberHours: { memberId: string; hours: number }[], editedIndividually: boolean) => {
