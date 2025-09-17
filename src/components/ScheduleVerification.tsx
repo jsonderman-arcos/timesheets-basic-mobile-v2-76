@@ -197,6 +197,13 @@ export const ScheduleVerification = () => {
     return selectedDate.toDateString() === today.toDateString();
   }, [selectedDate]);
 
+  const handleCloseDashboardSuccess = useCallback(() => {
+    setSelectedDate(new Date());
+    setIsCompleted(false);
+    setShowTimeEntry(false);
+    setDatePickerAnchor(null);
+  }, []);
+
   const getCrewMemberName = useCallback(
     (memberId: string) => crewMembers.find((member) => member.id === memberId)?.name ?? 'Unknown Member',
     [crewMembers]
@@ -409,11 +416,29 @@ export const ScheduleVerification = () => {
 
           {/* Time Tracking Overview */}
          
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
-              <CheckCircle sx={{ color: 'success.main' }} />
-              <Typography variant="h5" fontWeight="semibold" color="text.primary">
-                Today's Time Tracking Complete
-              </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 1,
+                mb: 3
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CheckCircle sx={{ color: 'success.main' }} />
+                <Typography variant="h5" fontWeight="semibold" color="text.primary">
+                  Today's Time Tracking Complete
+                </Typography>
+              </Box>
+              <Button
+                size="small"
+                color="primary"
+                onClick={handleCloseDashboardSuccess}
+                sx={{ textTransform: 'none' }}
+              >
+                Close
+              </Button>
             </Box>
             
             {/* Summary Stats */}
