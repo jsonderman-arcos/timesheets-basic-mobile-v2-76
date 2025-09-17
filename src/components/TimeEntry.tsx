@@ -73,6 +73,8 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
 
   const [timeEntries, setTimeEntries] = useState<Record<string, { startTime: string; endTime: string }>>({});
   const [loading, setLoading] = useState(true);
+  const [hasExistingData, setHasExistingData] = useState(false);
+  const [notes, setNotes] = useState('');
 
   const [editIndividually, setEditIndividually] = useState(false);
   const [groupTimes, setGroupTimes] = useState<{ startTime: string; endTime: string }>({
@@ -116,7 +118,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
       try {
         const { data: existingEntries, error } = await supabase
           .from('time_entries')
-          .select('member_id, start_time, end_time')
+          .select('member_id, start_time, end_time, comments')
           .eq('date', selectedDate.toISOString().split('T')[0])
           .eq('crew_id', crewId);
 
@@ -125,6 +127,8 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
         }
 
         const entriesMap = buildDefaultEntries();
+        const hasData = existingEntries && existingEntries.length > 0;
+        setHasExistingData(hasData);
 
         crewMembers.forEach((member) => {
           const existingEntry = existingEntries?.find((entry) => entry.member_id === member.id);
@@ -134,6 +138,9 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
               startTime: normalizeTo24Hour(existingEntry.start_time),
               endTime: normalizeTo24Hour(existingEntry.end_time),
             };
+            if (existingEntry.comments) {
+              setNotes(existingEntry.comments);
+            }
           }
         });
 
@@ -195,7 +202,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
   };
 
   const formatPickerValue = (value: Date | null) => {
-    if (!value || !isValid(value)) {
+    if (!value || !value.getTime || isNaN(value.getTime())) {
       return '';
     }
     return format(value, 'HH:mm');
@@ -249,7 +256,10 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
         hours_regular: memberData.hours,
         crew_id: crewId,
         member_id: memberData.memberId, // Use the real member_id
-        status: 'submitted'
+        status: 'submitted',
+        comments: notes,
+        submitted_at: new Date().toISOString(),
+        submitted_by: crewId // Using crew_id as submitted_by for now
       }));
 
       const { error } = await supabase
@@ -312,6 +322,16 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
                 month: 'long', 
                 day: 'numeric' 
               })}
+              {hasExistingData && (
+                <Typography variant="subtitle2" sx={{ color: 'var(--theme-base-text-secondary)', fontWeight: 'normal' }}>
+                  Submitted Hours
+                </Typography>
+              )}
+              {!hasExistingData && (
+                <Typography variant="subtitle2" sx={{ color: 'var(--theme-base-text-secondary)', fontWeight: 'normal' }}>
+                  Scheduled Hours
+                </Typography>
+              )}
             </Typography>
             
             <FormControlLabel
@@ -434,21 +454,52 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
           </Box>
         )}
 
-        <Button
-          variant="contained"
-          fullWidth
-          startIcon={<Save />}
-          onClick={handleSubmit}
-          disabled={!isValid}
-          size="large"
-          sx={{ 
-            mt: 2,
-            py: 1.5,
-            textTransform: 'none'
-          }}
-        >
-          Save Time Entries
-        </Button>
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Notes
+          </Typography>
+          <Box 
+            component="textarea"
+            value={notes}
+            onChange={(e: any) => setNotes(e.target.value)}
+            placeholder="Add any notes about this timesheet..."
+            sx={{
+              width: '100%',
+              minHeight: '80px',
+              p: 1.5,
+              border: '1px solid',
+              borderColor: 'var(--theme-base-border-default)',
+              borderRadius: 1,
+              bgcolor: 'background.paper',
+              color: 'var(--theme-base-text-default)',
+              fontFamily: 'inherit',
+              fontSize: '14px',
+              resize: 'vertical',
+              '&:focus': {
+                outline: 'none',
+                borderColor: 'var(--theme-base-border-focused)'
+              }
+            }}
+          />
+        </Box>
+
+        {!hasExistingData && (
+          <Button
+            variant="contained"
+            fullWidth
+            startIcon={<Save />}
+            onClick={handleSubmit}
+            disabled={!isValid}
+            size="large"
+            sx={{ 
+              mt: 2,
+              py: 1.5,
+              textTransform: 'none'
+            }}
+          >
+            Save Time Entries
+          </Button>
+        )}
       </Box>
     </Layout>
   );
