@@ -8,7 +8,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
-import * as harmonyDesignSystem from 'arcos-harmony-design-system';
+
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdditionalDetails from "./pages/AdditionalDetails";
@@ -21,7 +21,17 @@ import { Navigate } from "react-router-dom";
 
 const queryClient = new QueryClient();
 
-const theme = createTheme(harmonyDesignSystem.muiThemeJson as ThemeOptions);
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+});
 
 const App = () => (
   <ThemeProvider theme={theme}>
