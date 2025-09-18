@@ -19,6 +19,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: ['@mui/icons-material'],
+    include: ['react-is', 'prop-types', 'hoist-non-react-statics']
+  },
   build: {
     target: 'es2020',
     minify: false,
