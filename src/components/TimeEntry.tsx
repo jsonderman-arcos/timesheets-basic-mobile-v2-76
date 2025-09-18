@@ -306,7 +306,7 @@ export const TimeEntry = ({ onSubmit, onBack, selectedDate, crewMembers, crewId 
       if (newEntries.length > 0) {
         const { error: insertError } = await supabase
           .from('time_entries')
-          .insert(newEntries, { returning: 'minimal' });
+          .insert(newEntries);
         
         if (insertError) {
           console.error('Error inserting time entries:', insertError);
