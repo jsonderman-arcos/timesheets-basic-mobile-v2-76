@@ -23,9 +23,13 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: undefined
-      }
+      },
+      external: []
     },
-    target: 'esnext',
-    minify: false
+    target: 'es2020',
+    minify: false,
+    commonjsOptions: {
+      transformMixedEsModules: true
+    }
   }
 }));
