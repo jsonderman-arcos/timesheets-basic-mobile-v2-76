@@ -8,102 +8,93 @@
 
 @layer base {
   :root {
-    /* Map design tokens to semantic CSS variables for Tailwind integration */
+    /* Map design tokens to semantic CSS variables - using HSL values */
     
     /* Background and foreground */
-    --background: var(--theme-base-background-primary);
-    --foreground: var(--theme-base-foreground-primary);
+    --background: 210 15% 8%;
+    --foreground: 210 15% 95%;
 
     /* Card components */
-    --card: var(--theme-component-card-background-default);
-    --card-foreground: var(--theme-component-card-foreground-default);
+    --card: 210 15% 12%;
+    --card-foreground: 210 15% 95%;
 
     /* Popover components */
-    --popover: var(--theme-component-popover-background-default);
-    --popover-foreground: var(--theme-component-popover-foreground-default);
+    --popover: 210 15% 12%;
+    --popover-foreground: 210 15% 95%;
 
     /* Primary brand colors */
-    --primary: var(--theme-base-brand-primary);
-    --primary-foreground: var(--theme-base-brand-primary-foreground);
-    --primary-glow: var(--theme-base-brand-primary-light);
+    --primary: 355 85% 51%;
+    --primary-foreground: 210 15% 95%;
+    --primary-glow: 355 85% 70%;
 
     /* Secondary colors */
-    --secondary: var(--theme-base-background-secondary);
-    --secondary-foreground: var(--theme-base-foreground-secondary);
+    --secondary: 210 15% 20%;
+    --secondary-foreground: 210 15% 95%;
 
     /* Muted colors */
-    --muted: var(--theme-base-background-muted);
-    --muted-foreground: var(--theme-base-foreground-muted);
+    --muted: 210 15% 16%;
+    --muted-foreground: 210 15% 65%;
 
     /* Accent colors */
-    --accent: var(--theme-base-accent-primary);
-    --accent-foreground: var(--theme-base-accent-primary-foreground);
+    --accent: 195 85% 50%;
+    --accent-foreground: 210 15% 95%;
 
     /* Success colors */
-    --success: var(--theme-base-success-primary);
-    --success-foreground: var(--theme-base-success-primary-foreground);
+    --success: 120 60% 37%;
+    --success-foreground: 210 15% 95%;
 
     /* Destructive colors */
-    --destructive: var(--theme-base-destructive-primary);
-    --destructive-foreground: var(--theme-base-destructive-primary-foreground);
+    --destructive: 0 85% 51%;
+    --destructive-foreground: 210 15% 95%;
 
     /* Form elements */
-    --border: var(--theme-component-border-default);
-    --input: var(--theme-component-input-background-default);
-    --ring: var(--theme-component-focus-ring-default);
-
-    /* Custom gradients and effects */
-    --gradient-primary: var(--theme-base-gradient-primary);
-    --gradient-card: var(--theme-base-gradient-card);
-    --shadow-soft: var(--theme-base-shadow-soft);
-    --transition-smooth: var(--core-animation-easing-standard);
+    --border: 210 15% 24%;
+    --input: 210 15% 16%;
+    --ring: 355 85% 51%;
 
     /* Layout */
-    --radius: var(--theme-base-border-radius-default);
-
-    /* Brand specific tokens */
-    --brand-dark-500: var(--theme-base-background-brand-dark-tone);
+    --radius: 0.5rem;
 
     /* Sidebar tokens */
-    --sidebar-background: var(--theme-component-sidebar-background-default);
-    --sidebar-foreground: var(--theme-component-sidebar-foreground-default);
-    --sidebar-primary: var(--theme-component-sidebar-primary);
-    --sidebar-primary-foreground: var(--theme-component-sidebar-primary-foreground);
-    --sidebar-accent: var(--theme-component-sidebar-accent);
-    --sidebar-accent-foreground: var(--theme-component-sidebar-accent-foreground);
-    --sidebar-border: var(--theme-component-sidebar-border);
-    --sidebar-ring: var(--theme-component-sidebar-ring);
+    --sidebar-background: 210 15% 12%;
+    --sidebar-foreground: 210 15% 95%;
+    --sidebar-primary: 355 85% 51%;
+    --sidebar-primary-foreground: 210 15% 95%;
+    --sidebar-accent: 195 85% 50%;
+    --sidebar-accent-foreground: 210 15% 95%;
+    --sidebar-border: 210 15% 24%;
+    --sidebar-ring: 355 85% 51%;
   }
 
   .dark {
-    /* Dark theme overrides - inherit from dark theme tokens */
-    --background: var(--theme-dark-background-primary);
-    --foreground: var(--theme-dark-foreground-primary);
-    --card: var(--theme-dark-card-background-default);
-    --card-foreground: var(--theme-dark-card-foreground-default);
-    --popover: var(--theme-dark-popover-background-default);
-    --popover-foreground: var(--theme-dark-popover-foreground-default);
-    --primary: var(--theme-dark-brand-primary);
-    --primary-foreground: var(--theme-dark-brand-primary-foreground);
-    --secondary: var(--theme-dark-background-secondary);
-    --secondary-foreground: var(--theme-dark-foreground-secondary);
-    --muted: var(--theme-dark-background-muted);
-    --muted-foreground: var(--theme-dark-foreground-muted);
-    --accent: var(--theme-dark-accent-primary);
-    --accent-foreground: var(--theme-dark-accent-primary-foreground);
-    --destructive: var(--theme-dark-destructive-primary);
-    --destructive-foreground: var(--theme-dark-destructive-primary-foreground);
-    --border: var(--theme-dark-border-default);
-    --input: var(--theme-dark-input-background-default);
-    --ring: var(--theme-dark-focus-ring-default);
-    --sidebar-background: var(--theme-dark-sidebar-background-default);
-    --sidebar-foreground: var(--theme-dark-sidebar-foreground-default);
-    --sidebar-primary: var(--theme-dark-sidebar-primary);
-    --sidebar-primary-foreground: var(--theme-dark-sidebar-primary-foreground);
-    --sidebar-accent: var(--theme-dark-sidebar-accent);
-    --sidebar-accent-foreground: var(--theme-dark-sidebar-accent-foreground);
-    --sidebar-border: var(--theme-dark-sidebar-border);
-    --sidebar-ring: var(--theme-dark-sidebar-ring);
+    /* Dark theme overrides - using proper HSL values */
+    --background: 210 15% 8%;
+    --foreground: 210 15% 95%;
+    --card: 210 15% 12%;
+    --card-foreground: 210 15% 95%;
+    --popover: 210 15% 12%;
+    --popover-foreground: 210 15% 95%;
+    --primary: 355 85% 51%;
+    --primary-foreground: 210 15% 95%;
+    --secondary: 210 15% 20%;
+    --secondary-foreground: 210 15% 95%;
+    --muted: 210 15% 16%;
+    --muted-foreground: 210 15% 65%;
+    --accent: 195 85% 50%;
+    --accent-foreground: 210 15% 95%;
+    --destructive: 0 85% 51%;
+    --destructive-foreground: 210 15% 95%;
+    --border: 210 15% 24%;
+    --input: 210 15% 16%;
+    --ring: 355 85% 51%;
+    --sidebar-background: 210 15% 12%;
+    --sidebar-foreground: 210 15% 95%;
+    --sidebar-primary: 355 85% 51%;
+    --sidebar-primary-foreground: 210 15% 95%;
+    --sidebar-accent: 195 85% 50%;
+    --sidebar-accent-foreground: 210 15% 95%;
+    --sidebar-border: 210 15% 24%;
+    --sidebar-ring: 355 85% 51%;
   }
 }
 
