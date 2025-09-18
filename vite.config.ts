@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => ({
     }
   },
   optimizeDeps: {
-    exclude: ["@mui/icons-material"]
+    exclude: ["@mui/icons-material"],
+    include: ["react-is"]
   }
 }));
