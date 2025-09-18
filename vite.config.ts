@@ -24,6 +24,8 @@ export default defineConfig(({ mode }) => ({
       output: {
         manualChunks: undefined
       }
-    }
+    },
+    target: 'esnext',
+    minify: false
   }
 }));
