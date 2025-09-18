@@ -25,5 +25,8 @@ export default defineConfig(({ mode }) => ({
         manualChunks: undefined
       }
     }
+  },
+  optimizeDeps: {
+    exclude: ["@mui/icons-material"]
   }
 }));
