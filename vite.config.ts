@@ -20,16 +20,15 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
+    target: 'es2020',
+    minify: false,
     rollupOptions: {
       output: {
         manualChunks: undefined
-      },
-      external: []
-    },
-    target: 'es2020',
-    minify: false,
-    commonjsOptions: {
-      transformMixedEsModules: true
+      }
     }
+  },
+  esbuild: {
+    target: 'es2020'
   }
 }));
